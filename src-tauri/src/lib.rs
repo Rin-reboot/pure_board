@@ -5,9 +5,9 @@ use sysinfo::System;
 // フロントに返すデータの形。Serializeを付けるとJSONに変換できるようになる
 #[derive(Serialize)]
 struct SystemUsage {
-    cpu_usage: f32,   // 全体CPU使用率(%)
-    mem_used: u64,    // 使用中メモリ(バイト)
-    mem_total: u64,   // 総メモリ(バイト)
+    cpu_usage: f32, // 全体CPU使用率(%)
+    mem_used: u64,  // 使用中メモリ(バイト)
+    mem_total: u64, // 総メモリ(バイト)
 }
 
 // アプリ全体で共有する状態。Mutexで包むことで複数スレッドから安全に書き換えられる
@@ -28,8 +28,8 @@ fn get_system_usage(state: tauri::State<AppState>) -> SystemUsage {
     sys.refresh_cpu_all();
     sys.refresh_memory();
 
-    let cpu_usage = sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>()
-        / sys.cpus().len() as f32;
+    let cpu_usage =
+        sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
 
     SystemUsage {
         cpu_usage,
