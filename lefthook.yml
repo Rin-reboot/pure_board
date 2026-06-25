@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "src/**/*.{js,jsx,ts,tsx,json,css}"
+      run: pnpm exec biome check --write {staged_files}
+      stage_fixed: true
+    rust-fmt:
+      glob: "*.rs"
+      run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
