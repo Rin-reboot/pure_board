@@ -295,6 +295,12 @@ body,
   justify-content: space-between;
 }
 
+.memo-loading {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  padding: 8px 0;
+}
+
 .memo-title {
   font-weight: 600;
   font-size: 0.95rem;
