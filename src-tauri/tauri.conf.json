@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "pure_board",
-        "width": 800,
-        "height": 600,
+        "width": 400,
+        "height": 800,
 	"transparent": true,
 	"decorations": false
       }

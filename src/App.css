@@ -12,8 +12,8 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  --bg-glass: rgba(20, 26, 38, 0.55);
-  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-glass: rgba(20, 26, 38, 0.8);
+  --bg-card: rgba(20, 26, 38, 0.8);
   --border-subtle: rgba(255, 255, 255, 0.08);
 
   --text-primary: #f2f4f8;
