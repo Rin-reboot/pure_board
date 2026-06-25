@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 
 // Rust側の SystemUsage 構造体と同じ形(JSONで渡ってくる)
 interface SystemUsageData {

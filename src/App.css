@@ -18,6 +18,7 @@ body,
 #root {
   margin: 0;
   padding: 0;
+  /* biome-ignore lint/complexity/noImportantStyles: ルート要素の透過を他CSSに上書きされないよう確実にするため */
   background-color: transparent !important;
 }
 
