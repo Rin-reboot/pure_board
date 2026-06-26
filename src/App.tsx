@@ -7,6 +7,7 @@ import { RamCard } from "./components/RamCard";
 import { TitleBar } from "./components/TitleBar";
 import { useCpuHistory } from "./hooks/useCpuHistory";
 import { useSystemUsage } from "./hooks/useSystemUsage";
+import { useTheme } from "./hooks/useTheme";
 
 // TODO: sysinfoでプロセッサ名を取得するRustコマンドができたら置き換える
 const MOCK_PROCESSOR_NAME = "プロセッサ名(後で実装)";
@@ -17,6 +18,7 @@ const MOCK_NETWORK = { downloadMbps: 120, uploadMbps: 28, pingMs: 8 };
 function App() {
   const usage = useSystemUsage();
   const cpuHistory = useCpuHistory(usage?.cpu_usage);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <main className="container" data-tauri-drag-region>
@@ -36,7 +38,7 @@ function App() {
         <MemoPanel />
       </div>
 
-      <Footer />
+      <Footer theme={theme} onToggleTheme={toggleTheme} />
     </main>
   );
 }

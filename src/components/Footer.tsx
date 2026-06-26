@@ -1,5 +1,11 @@
-import { BarChart3, ClipboardList, Pencil, Sun } from "lucide-react";
+import { BarChart3, ClipboardList, Moon, Pencil, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { Theme } from "../hooks/useTheme";
+
+interface FooterProps {
+  theme: Theme;
+  onToggleTheme: () => void;
+}
 
 function formatDateTime(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -8,7 +14,7 @@ function formatDateTime(date: Date): string {
   )} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export function Footer() {
+export function Footer({ theme, onToggleTheme }: FooterProps) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -30,8 +36,8 @@ export function Footer() {
         </button>
       </div>
       <span className="footer-datetime">{formatDateTime(now)}</span>
-      <button type="button" aria-label="テーマ切替">
-        <Sun size={14} />
+      <button type="button" onClick={onToggleTheme} aria-label="テーマ切替">
+        {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
       </button>
     </footer>
   );

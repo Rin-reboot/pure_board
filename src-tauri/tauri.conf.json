@@ -14,7 +14,7 @@
       {
         "title": "pure_board",
         "width": 400,
-        "height": 800,
+        "height": 600,
 	"transparent": true,
 	"decorations": false
       }

@@ -1,7 +1,8 @@
 /* ============================================================
-   Design tokens
+   Design tokens (ダーク: デフォルト)
    ============================================================ */
-:root {
+:root,
+[data-theme="dark"] {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -15,6 +16,11 @@
   --bg-glass: rgba(20, 26, 38, 0.8);
   --bg-card: rgba(20, 26, 38, 0.8);
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --track-subtle: rgba(255, 255, 255, 0.08);
+  --hover-overlay: rgba(255, 255, 255, 0.06);
+  --surface-input: rgba(255, 255, 255, 0.04);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --on-accent: #0a0e14;
 
   --text-primary: #f2f4f8;
   --text-secondary: #8b93a7;
@@ -28,6 +34,29 @@
   --radius-window: 20px;
   --radius-card: 14px;
   --radius-pill: 999px;
+}
+
+/* ============================================================
+   Design tokens (ライト)
+   ============================================================ */
+[data-theme="light"] {
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --bg-card: rgba(255, 255, 255, 0.6);
+  --border-subtle: rgba(255, 255, 255, 0.65);
+  --track-subtle: rgba(17, 24, 39, 0.08);
+  --hover-overlay: rgba(17, 24, 39, 0.06);
+  --surface-input: rgba(255, 255, 255, 0.55);
+  --scrollbar-thumb: rgba(17, 24, 39, 0.15);
+  --on-accent: #ffffff;
+
+  --text-primary: #1c2333;
+  --text-secondary: #5c6577;
+  --text-tertiary: #8b93a3;
+
+  --accent-cpu: #2f6fe0;
+  --accent-ram: #0fa968;
+  --accent-network: #7c4fe0;
+  --accent-memo: #d97706;
 }
 
 html,
@@ -106,7 +135,7 @@ body,
 }
 
 .title-bar-actions button:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--hover-overlay);
   color: var(--text-primary);
 }
 
@@ -127,7 +156,7 @@ body,
 }
 
 .card-stack::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--scrollbar-thumb);
   border-radius: var(--radius-pill);
 }
 
@@ -224,7 +253,7 @@ body,
 
 .bar-track {
   height: 8px;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--track-subtle);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -295,12 +324,6 @@ body,
   justify-content: space-between;
 }
 
-.memo-loading {
-  font-size: 0.8rem;
-  color: var(--text-tertiary);
-  padding: 8px 0;
-}
-
 .memo-title {
   font-weight: 600;
   font-size: 0.95rem;
@@ -327,8 +350,14 @@ body,
 }
 
 .memo-header-actions button:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--hover-overlay);
   color: var(--text-primary);
+}
+
+.memo-loading {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  padding: 8px 0;
 }
 
 .memo-list {
@@ -340,6 +369,7 @@ body,
 }
 
 .memo-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -387,7 +417,7 @@ body,
 .memo-checkbox input:checked + .memo-checkbox-box::after {
   content: "✓";
   font-size: 0.7rem;
-  color: #0a0e14;
+  color: var(--on-accent);
 }
 
 .memo-text {
@@ -402,10 +432,11 @@ body,
 }
 
 .memo-tag {
+  flex-shrink: 0;
   font-size: 0.7rem;
   padding: 3px 9px;
   border-radius: var(--radius-pill);
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--hover-overlay);
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -415,15 +446,69 @@ body,
   color: var(--accent-ram);
 }
 
+.memo-delete {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.memo-item:hover .memo-delete,
+.memo-item:focus-within .memo-delete {
+  opacity: 1;
+}
+
+.memo-delete:hover {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
 .memo-input-row {
   display: flex;
   gap: 8px;
   margin-top: 4px;
 }
 
+.memo-tag-select {
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--surface-input);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238b93a7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 9px 26px 9px 10px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.memo-tag-select:focus {
+  outline: none;
+  border-color: var(--accent-cpu);
+}
+
+.memo-tag-select option {
+  background-color: #1c2333;
+  color: #f2f4f8;
+}
+
 .memo-input-row input {
   flex: 1;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--surface-input);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 9px 12px;
@@ -447,7 +532,7 @@ body,
   place-items: center;
   border: none;
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--hover-overlay);
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
@@ -455,7 +540,7 @@ body,
 
 .memo-input-row button:hover {
   background-color: var(--accent-cpu);
-  color: #0a0e14;
+  color: var(--on-accent);
 }
 
 /* ============================================================
@@ -492,7 +577,7 @@ body,
 
 .footer-icons button:hover,
 .footer-bar > button:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--hover-overlay);
   color: var(--text-primary);
 }
 
@@ -504,7 +589,8 @@ body,
    Accessibility
    ============================================================ */
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--accent-cpu);
   outline-offset: 2px;
 }
@@ -514,67 +600,4 @@ input:focus-visible {
   .bar-fill {
     transition: none;
   }
-}
-
-/* memo-item をホバー対象にするため position 指定 */
-.memo-item {
-  position: relative;
-}
-
-.memo-delete {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  border-radius: 6px;
-  cursor: pointer;
-  opacity: 0;
-  transition:
-    opacity 0.15s ease,
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.memo-item:hover .memo-delete {
-  opacity: 1;
-}
-
-.memo-delete:hover {
-  background-color: rgba(248, 113, 113, 0.15);
-  color: #f87171;
-}
-
-/* タグの常時表示分が削除ボタン出現時にズレないよう、削除ボタン分の領域を確保 */
-.memo-tag {
-  flex-shrink: 0;
-}
-
-.memo-tag-select {
-  flex-shrink: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: rgba(255, 255, 255, 0.04);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238b93a7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 9px 26px 9px 10px;
-  color: var(--text-primary);
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.memo-tag-select:focus {
-  outline: none;
-  border-color: var(--accent-cpu);
-}
-
-.memo-tag-select option {
-  background-color: #1c2333;
-  color: var(--text-primary);
 }
