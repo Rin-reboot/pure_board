@@ -23,7 +23,7 @@ export function usePersistedMemos() {
     let cancelled = false;
 
     const init = async () => {
-      const store = await load(STORE_FILE, { autoSave: false });
+      const store = await load(STORE_FILE, { autoSave: false, defaults: {} });
       storeRef.current = store;
 
       const saved = await store.get<MemoItem[]>(STORE_KEY);
