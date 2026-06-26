@@ -1,10 +1,13 @@
-import { MoreHorizontal, Plus, Send, StickyNote } from "lucide-react";
+import { MoreHorizontal, Plus, Send, StickyNote, X } from "lucide-react";
 import { useState } from "react";
 import { usePersistedMemos } from "../hooks/usePersistedMemos";
 
+const TAG_PRESETS = ["今日中", "明日", "今週中", "未定"];
+
 export function MemoPanel() {
-  const { memos, setMemos, isLoaded } = usePersistedMemos();
+  const { memos, setMemos, deleteMemo, isLoaded } = usePersistedMemos();
   const [draft, setDraft] = useState("");
+  const [selectedTag, setSelectedTag] = useState(TAG_PRESETS[0]);
 
   const toggleMemo = (id: string) => {
     setMemos((prev) =>
@@ -19,7 +22,7 @@ export function MemoPanel() {
     if (!text) return;
     setMemos((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), text, done: false, tag: "未定" },
+      { id: crypto.randomUUID(), text, done: false, tag: selectedTag },
     ]);
     setDraft("");
   };
@@ -63,12 +66,32 @@ export function MemoPanel() {
               <span className={`memo-tag ${memo.done ? "memo-tag-done" : ""}`}>
                 {memo.tag}
               </span>
+              <button
+                type="button"
+                className="memo-delete"
+                onClick={() => deleteMemo(memo.id)}
+                aria-label="削除"
+              >
+                <X size={13} />
+              </button>
             </li>
           ))}
         </ul>
       )}
 
       <div className="memo-input-row">
+        <select
+          className="memo-tag-select"
+          value={selectedTag}
+          onChange={(e) => setSelectedTag(e.target.value)}
+          aria-label="タグを選択"
+        >
+          {TAG_PRESETS.map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
         <input
           type="text"
           placeholder="メモを入力..."

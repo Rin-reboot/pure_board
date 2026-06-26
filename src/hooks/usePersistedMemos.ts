@@ -68,5 +68,9 @@ export function usePersistedMemos() {
     persist();
   }, [memos, isLoaded]);
 
-  return { memos, setMemos, isLoaded };
+  const deleteMemo = (id: string) => {
+    setMemos((prev) => prev.filter((memo) => memo.id !== id));
+  };
+
+  return { memos, setMemos, deleteMemo, isLoaded };
 }

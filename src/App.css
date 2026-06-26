@@ -515,3 +515,63 @@ input:focus-visible {
     transition: none;
   }
 }
+
+/* memo-item をホバー対象にするため position 指定 */
+.memo-item {
+  position: relative;
+}
+
+.memo-delete {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.memo-item:hover .memo-delete {
+  opacity: 1;
+}
+
+.memo-delete:hover {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* タグの常時表示分が削除ボタン出現時にズレないよう、削除ボタン分の領域を確保 */
+.memo-tag {
+  flex-shrink: 0;
+}
+
+.memo-tag-select {
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(255, 255, 255, 0.04);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238b93a7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 9px 26px 9px 10px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.memo-tag-select:focus {
+  outline: none;
+  border-color: var(--accent-cpu);
+}
+
+.memo-tag-select option {
+  background-color: #1c2333;
+  color: var(--text-primary);
+}
