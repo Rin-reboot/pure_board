@@ -601,3 +601,8 @@ select:focus-visible {
     transition: none;
   }
 }
+
+.title-bar-actions button.is-active {
+  background-color: rgba(74, 158, 255, 0.15);
+  color: var(--accent-cpu);
+}

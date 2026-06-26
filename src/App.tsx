@@ -5,6 +5,7 @@ import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
 import { TitleBar } from "./components/TitleBar";
+import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useCpuHistory } from "./hooks/useCpuHistory";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
@@ -19,10 +20,11 @@ function App() {
   const usage = useSystemUsage();
   const cpuHistory = useCpuHistory(usage?.cpu_usage);
   const { theme, toggleTheme } = useTheme();
+  const { isPinned, togglePin } = useAlwaysOnTop();
 
   return (
     <main className="container" data-tauri-drag-region>
-      <TitleBar />
+      <TitleBar isPinned={isPinned} onTogglePin={togglePin} />
 
       <div className="card-stack">
         <CpuCard

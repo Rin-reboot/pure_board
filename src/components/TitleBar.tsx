@@ -1,6 +1,16 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LineChart, Pin, Settings, X } from "lucide-react";
 
-export function TitleBar() {
+interface TitleBarProps {
+  isPinned: boolean;
+  onTogglePin: () => void;
+}
+
+export function TitleBar({ isPinned, onTogglePin }: TitleBarProps) {
+  const handleClose = () => {
+    getCurrentWindow().close();
+  };
+
   return (
     <header className="title-bar" data-tauri-drag-region>
       <div className="title-bar-left">
@@ -8,13 +18,19 @@ export function TitleBar() {
         <span>System Monitor</span>
       </div>
       <div className="title-bar-actions">
-        <button type="button" aria-label="ピン留め">
-          <Pin size={15} />
+        <button
+          type="button"
+          onClick={onTogglePin}
+          aria-label="常に最前面に表示"
+          aria-pressed={isPinned}
+          className={isPinned ? "is-active" : ""}
+        >
+          <Pin size={15} fill={isPinned ? "currentColor" : "none"} />
         </button>
         <button type="button" aria-label="設定">
           <Settings size={15} />
         </button>
-        <button type="button" aria-label="閉じる">
+        <button type="button" onClick={handleClose} aria-label="閉じる">
           <X size={15} />
         </button>
       </div>
