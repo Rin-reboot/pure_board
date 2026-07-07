@@ -21,7 +21,12 @@ describe("TitleBar", () => {
   it("reflects the pinned state and calls the toggle handler", () => {
     const onTogglePin = vi.fn();
     const { getByLabelText } = render(
-      <TitleBar isPinned={true} onTogglePin={onTogglePin} />,
+      <TitleBar
+        isPinned={true}
+        isSettingsOpen={false}
+        onTogglePin={onTogglePin}
+        onToggleSettings={vi.fn()}
+      />,
     );
     const pinButton = getByLabelText("常に最前面に表示");
 
@@ -33,9 +38,34 @@ describe("TitleBar", () => {
     expect(onTogglePin).toHaveBeenCalledTimes(1);
   });
 
+  it("reflects the settings state and calls the toggle handler", () => {
+    const onToggleSettings = vi.fn();
+    const { getByLabelText } = render(
+      <TitleBar
+        isPinned={false}
+        isSettingsOpen={true}
+        onTogglePin={vi.fn()}
+        onToggleSettings={onToggleSettings}
+      />,
+    );
+    const settingsButton = getByLabelText("設定");
+
+    expect(settingsButton.getAttribute("aria-pressed")).toBe("true");
+    expect(settingsButton.className).toContain("is-active");
+
+    fireEvent.click(settingsButton);
+
+    expect(onToggleSettings).toHaveBeenCalledTimes(1);
+  });
+
   it("closes the current window", () => {
     const { getByLabelText } = render(
-      <TitleBar isPinned={false} onTogglePin={vi.fn()} />,
+      <TitleBar
+        isPinned={false}
+        isSettingsOpen={false}
+        onTogglePin={vi.fn()}
+        onToggleSettings={vi.fn()}
+      />,
     );
 
     fireEvent.click(getByLabelText("閉じる"));

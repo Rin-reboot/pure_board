@@ -3,10 +3,17 @@ import { LineChart, Pin, Settings, X } from "lucide-react";
 
 interface TitleBarProps {
   isPinned: boolean;
+  isSettingsOpen: boolean;
   onTogglePin: () => void;
+  onToggleSettings: () => void;
 }
 
-export function TitleBar({ isPinned, onTogglePin }: TitleBarProps) {
+export function TitleBar({
+  isPinned,
+  isSettingsOpen,
+  onTogglePin,
+  onToggleSettings,
+}: TitleBarProps) {
   const handleClose = () => {
     getCurrentWindow().close();
   };
@@ -27,7 +34,13 @@ export function TitleBar({ isPinned, onTogglePin }: TitleBarProps) {
         >
           <Pin size={15} fill={isPinned ? "currentColor" : "none"} />
         </button>
-        <button type="button" aria-label="設定">
+        <button
+          type="button"
+          onClick={onToggleSettings}
+          aria-label="設定"
+          aria-pressed={isSettingsOpen}
+          className={isSettingsOpen ? "is-active" : ""}
+        >
           <Settings size={15} />
         </button>
         <button type="button" onClick={handleClose} aria-label="閉じる">

@@ -1,9 +1,11 @@
 import "./App.css";
+import { useState } from "react";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
 import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
+import { SettingsPanel } from "./components/SettingsPanel";
 import { TitleBar } from "./components/TitleBar";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useCpuHistory } from "./hooks/useCpuHistory";
@@ -18,10 +20,17 @@ function App() {
   const cpuHistory = useCpuHistory(usage?.cpu_usage);
   const { theme, toggleTheme } = useTheme();
   const { isPinned, togglePin } = useAlwaysOnTop();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <main className="container" data-tauri-drag-region>
-      <TitleBar isPinned={isPinned} onTogglePin={togglePin} />
+      <TitleBar
+        isPinned={isPinned}
+        isSettingsOpen={isSettingsOpen}
+        onTogglePin={togglePin}
+        onToggleSettings={() => setIsSettingsOpen((prev) => !prev)}
+      />
+      {isSettingsOpen ? <SettingsPanel updateIntervalLabel="1.5s" /> : null}
 
       <div className="card-stack">
         <CpuCard

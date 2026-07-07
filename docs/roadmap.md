@@ -37,6 +37,7 @@ The following features are already implemented:
 * memo add / complete / delete behavior
 * memo tag selection
 * memo persistence
+* settings panel
 * dark mode / light mode toggle
 * OS theme detection at startup
 * manual theme preference persistence
@@ -65,9 +66,14 @@ These are likely next implementation targets.
 
 ## Settings Panel
 
-Status: planned
+Status: implemented
 
 Purpose:
+
+* provide a place for runtime preferences
+* show the current system usage update interval
+
+Future extensions:
 
 * allow users to change update intervals
 * expose basic runtime preferences
