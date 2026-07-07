@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import type { Theme } from "../hooks/useTheme";
 
 interface FooterProps {
+  isEditMode: boolean;
   theme: Theme;
+  onToggleEditMode: () => void;
   onToggleTheme: () => void;
 }
 
@@ -14,7 +16,12 @@ function formatDateTime(date: Date): string {
   )} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export function Footer({ theme, onToggleTheme }: FooterProps) {
+export function Footer({
+  isEditMode,
+  theme,
+  onToggleEditMode,
+  onToggleTheme,
+}: FooterProps) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -25,18 +32,24 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
   return (
     <footer className="footer-bar">
       <div className="footer-icons">
-        <button type="button" aria-label="編集">
+        <button
+          type="button"
+          aria-label="Edit mode"
+          aria-pressed={isEditMode}
+          className={isEditMode ? "is-active" : ""}
+          onClick={onToggleEditMode}
+        >
           <Pencil size={14} />
         </button>
-        <button type="button" aria-label="リスト">
+        <button type="button" aria-label="List">
           <ClipboardList size={14} />
         </button>
-        <button type="button" aria-label="グラフ">
+        <button type="button" aria-label="Graph">
           <BarChart3 size={14} />
         </button>
       </div>
       <span className="footer-datetime">{formatDateTime(now)}</span>
-      <button type="button" onClick={onToggleTheme} aria-label="テーマ切替">
+      <button type="button" onClick={onToggleTheme} aria-label="Toggle theme">
         {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
       </button>
     </footer>

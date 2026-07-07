@@ -164,6 +164,81 @@ body,
 }
 
 /* ============================================================
+   Widget edit mode
+   ============================================================ */
+.widget-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.widget-frame-editing {
+  padding: 8px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: calc(var(--radius-card) + 4px);
+  background-color: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.widget-frame-dragging {
+  border-color: var(--accent-cpu);
+  transform: scale(0.99);
+  opacity: 0.82;
+}
+
+.widget-frame-hidden {
+  opacity: 0.46;
+}
+
+.widget-edit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  color: var(--text-secondary);
+}
+
+.widget-edit-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.widget-drag-handle,
+.widget-visibility-toggle {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.widget-drag-handle {
+  cursor: grab;
+}
+
+.widget-drag-handle:active {
+  cursor: grabbing;
+}
+
+.widget-drag-handle:hover,
+.widget-visibility-toggle:hover {
+  background-color: var(--hover-overlay);
+  color: var(--text-primary);
+}
+
+/* ============================================================
    Generic card
    ============================================================ */
 .card {
@@ -589,6 +664,11 @@ body,
 .footer-bar > button:hover {
   background-color: var(--hover-overlay);
   color: var(--text-primary);
+}
+
+.footer-icons button.is-active {
+  background-color: rgba(74, 158, 255, 0.15);
+  color: var(--accent-cpu);
 }
 
 .footer-datetime {

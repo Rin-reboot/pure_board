@@ -15,7 +15,12 @@ beforeEach(() => {
 describe("Footer", () => {
   it("renders the current date and updates every thirty seconds", () => {
     const { getByText } = render(
-      <Footer theme="dark" onToggleTheme={vi.fn()} />,
+      <Footer
+        isEditMode={false}
+        theme="dark"
+        onToggleEditMode={vi.fn()}
+        onToggleTheme={vi.fn()}
+      />,
     );
 
     expect(getByText("2026/07/07 09:05")).toBeTruthy();
@@ -31,11 +36,32 @@ describe("Footer", () => {
   it("calls the theme toggle handler", () => {
     const onToggleTheme = vi.fn();
     const { getByLabelText } = render(
-      <Footer theme="light" onToggleTheme={onToggleTheme} />,
+      <Footer
+        isEditMode={false}
+        theme="light"
+        onToggleEditMode={vi.fn()}
+        onToggleTheme={onToggleTheme}
+      />,
     );
 
-    fireEvent.click(getByLabelText("テーマ切替"));
+    fireEvent.click(getByLabelText("Toggle theme"));
 
     expect(onToggleTheme).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the edit mode toggle handler", () => {
+    const onToggleEditMode = vi.fn();
+    const { getByLabelText } = render(
+      <Footer
+        isEditMode={false}
+        theme="dark"
+        onToggleEditMode={onToggleEditMode}
+        onToggleTheme={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(getByLabelText("Edit mode"));
+
+    expect(onToggleEditMode).toHaveBeenCalledTimes(1);
   });
 });

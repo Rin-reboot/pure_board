@@ -2,6 +2,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LineChart, Pin, Settings, X } from "lucide-react";
 
 interface TitleBarProps {
+  isDragEnabled: boolean;
   isPinned: boolean;
   isSettingsOpen: boolean;
   onTogglePin: () => void;
@@ -9,6 +10,7 @@ interface TitleBarProps {
 }
 
 export function TitleBar({
+  isDragEnabled,
   isPinned,
   isSettingsOpen,
   onTogglePin,
@@ -19,7 +21,10 @@ export function TitleBar({
   };
 
   return (
-    <header className="title-bar" data-tauri-drag-region>
+    <header
+      className="title-bar"
+      {...(isDragEnabled ? { "data-tauri-drag-region": "" } : {})}
+    >
       <div className="title-bar-left">
         <LineChart size={18} className="title-bar-icon" />
         <span>System Monitor</span>

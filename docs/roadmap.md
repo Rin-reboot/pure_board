@@ -43,6 +43,9 @@ The following features are already implemented:
 * OS theme detection at startup
 * manual theme preference persistence
 * always-on-top toggle
+* widget edit mode
+* widget drag reordering
+* widget visibility toggle
 * close button
 
 ---
@@ -92,7 +95,7 @@ Implementation should remain simple.
 
 ## Widget Edit Mode
 
-Status: planned
+Status: implemented
 
 Purpose:
 
@@ -100,9 +103,13 @@ Purpose:
 * allow widget order changes
 * allow temporary hiding of widgets
 
-Initial implementation should avoid complex layout engines.
+Implemented behavior:
 
-Prefer a simple predictable interaction model.
+* edit mode is toggled from the footer pencil button
+* widgets are reordered by dragging their edit-mode handle
+* widget visibility can be toggled from edit mode
+* widget order and visibility are persisted in the settings store
+* the main window drag region is disabled while edit mode is active
 
 ---
 

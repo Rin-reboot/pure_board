@@ -22,6 +22,7 @@ describe("TitleBar", () => {
     const onTogglePin = vi.fn();
     const { getByLabelText } = render(
       <TitleBar
+        isDragEnabled={true}
         isPinned={true}
         isSettingsOpen={false}
         onTogglePin={onTogglePin}
@@ -42,6 +43,7 @@ describe("TitleBar", () => {
     const onToggleSettings = vi.fn();
     const { getByLabelText } = render(
       <TitleBar
+        isDragEnabled={true}
         isPinned={false}
         isSettingsOpen={true}
         onTogglePin={vi.fn()}
@@ -61,6 +63,7 @@ describe("TitleBar", () => {
   it("closes the current window", () => {
     const { getByLabelText } = render(
       <TitleBar
+        isDragEnabled={true}
         isPinned={false}
         isSettingsOpen={false}
         onTogglePin={vi.fn()}
@@ -71,5 +74,23 @@ describe("TitleBar", () => {
     fireEvent.click(getByLabelText("閉じる"));
 
     expect(windowMocks.close).toHaveBeenCalledTimes(1);
+  });
+
+  it("omits the Tauri drag region when dragging is disabled", () => {
+    const { container } = render(
+      <TitleBar
+        isDragEnabled={false}
+        isPinned={false}
+        isSettingsOpen={false}
+        onTogglePin={vi.fn()}
+        onToggleSettings={vi.fn()}
+      />,
+    );
+
+    expect(
+      container
+        .querySelector(".title-bar")
+        ?.hasAttribute("data-tauri-drag-region"),
+    ).toBe(false);
   });
 });
