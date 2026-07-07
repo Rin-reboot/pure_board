@@ -10,9 +10,6 @@ import { useCpuHistory } from "./hooks/useCpuHistory";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
 
-// TODO: sysinfoでプロセッサ名を取得するRustコマンドができたら置き換える
-const MOCK_PROCESSOR_NAME = "プロセッサ名(後で実装)";
-
 // TODO: ネットワーク速度・Pingを取得するRustコマンドができたら置き換える
 const MOCK_NETWORK = { downloadMbps: 120, uploadMbps: 28, pingMs: 8 };
 
@@ -29,7 +26,7 @@ function App() {
       <div className="card-stack">
         <CpuCard
           usage={usage?.cpu_usage ?? 0}
-          processorName={MOCK_PROCESSOR_NAME}
+          processorName={usage?.cpu_name ?? "Unknown CPU"}
           history={cpuHistory}
         />
         <RamCard

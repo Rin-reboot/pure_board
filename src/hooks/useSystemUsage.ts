@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 interface SystemUsageData {
   cpu_usage: number;
+  cpu_name: string;
   mem_used: number;
   mem_total: number;
 }

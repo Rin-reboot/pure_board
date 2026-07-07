@@ -17,7 +17,12 @@ afterEach(() => {
 
 describe("useSystemUsage", () => {
   it("fetches usage on mount", async () => {
-    const usage = { cpu_usage: 33, mem_used: 10, mem_total: 20 };
+    const usage = {
+      cpu_usage: 33,
+      cpu_name: "Test CPU",
+      mem_used: 10,
+      mem_total: 20,
+    };
     tauriMocks.invoke.mockResolvedValue(usage);
 
     const { result } = renderHook(() => useSystemUsage());
@@ -30,6 +35,7 @@ describe("useSystemUsage", () => {
     vi.useFakeTimers();
     tauriMocks.invoke.mockResolvedValue({
       cpu_usage: 33,
+      cpu_name: "Test CPU",
       mem_used: 10,
       mem_total: 20,
     });
@@ -51,6 +57,7 @@ describe("useSystemUsage", () => {
   it("does not update after unmount", async () => {
     let resolveUsage: (value: {
       cpu_usage: number;
+      cpu_name: string;
       mem_used: number;
       mem_total: number;
     }) => void = () => {};
@@ -63,7 +70,12 @@ describe("useSystemUsage", () => {
     const { result, unmount } = renderHook(() => useSystemUsage());
 
     unmount();
-    resolveUsage({ cpu_usage: 33, mem_used: 10, mem_total: 20 });
+    resolveUsage({
+      cpu_usage: 33,
+      cpu_name: "Test CPU",
+      mem_used: 10,
+      mem_total: 20,
+    });
 
     await waitFor(() => expect(result.current).toBeNull());
   });

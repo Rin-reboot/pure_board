@@ -6,6 +6,7 @@ use sysinfo::System;
 #[derive(Serialize)]
 struct SystemUsage {
     cpu_usage: f32, // 全体CPU使用率(%)
+    cpu_name: String,
     mem_used: u64,  // 使用中メモリ(バイト)
     mem_total: u64, // 総メモリ(バイト)
 }
@@ -28,11 +29,22 @@ fn get_system_usage(state: tauri::State<AppState>) -> SystemUsage {
     sys.refresh_cpu_all();
     sys.refresh_memory();
 
-    let cpu_usage =
-        sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
+    let cpus = sys.cpus();
+    let cpu_usage = if cpus.is_empty() {
+        0.0
+    } else {
+        cpus.iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / cpus.len() as f32
+    };
+    let cpu_name = cpus
+        .first()
+        .map(|cpu| cpu.brand().trim())
+        .filter(|brand| !brand.is_empty())
+        .unwrap_or("Unknown CPU")
+        .to_string();
 
     SystemUsage {
         cpu_usage,
+        cpu_name,
         mem_used: sys.used_memory(),
         mem_total: sys.total_memory(),
     }
