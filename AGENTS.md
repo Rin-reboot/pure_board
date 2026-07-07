@@ -49,6 +49,16 @@ before modifying implementation.
 
 ---
 
+## Line Endings
+
+Use LF line endings for source files, Markdown, JSON, TOML, TypeScript, Rust, CSS, and config files.
+
+Do not introduce CRLF line endings except for Windows-specific script files such as `.bat`, `.cmd`, or `.ps1`.
+
+If line-ending normalization is required, keep it in a dedicated commit separate from feature changes.
+
+---
+
 # Execution Environment
 
 Codex may execute on either:
