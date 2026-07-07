@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/plugin-store", () => ({
   load: storeMocks.load,
 }));
 
-function createStore(savedTheme: "dark" | "light" | undefined): MockStore {
+function createStore(savedTheme: unknown): MockStore {
   return {
     get: vi.fn().mockResolvedValue(savedTheme),
     set: vi.fn().mockResolvedValue(undefined),
@@ -59,6 +59,20 @@ describe("useTheme", () => {
     await waitFor(() => expect(result.current.isLoaded).toBe(true));
 
     expect(result.current.theme).toBe("light");
+    expect(store.set).toHaveBeenCalledWith("theme", "light");
+    expect(store.save).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses and persists the system theme when saved theme is invalid", async () => {
+    const store = createStore("blue");
+    storeMocks.load.mockResolvedValue(store);
+
+    const { result } = renderHook(() => useTheme());
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(true));
+
+    expect(result.current.theme).toBe("light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     expect(store.set).toHaveBeenCalledWith("theme", "light");
     expect(store.save).toHaveBeenCalledTimes(1);
   });

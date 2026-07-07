@@ -10,15 +10,40 @@ export interface MemoItem {
 
 const STORE_FILE = "memos.json";
 const STORE_KEY = "memos";
+const MAX_MEMOS = 200;
+const MAX_MEMO_TEXT_LENGTH = 500;
+const MAX_MEMO_TAG_LENGTH = 40;
 
 const defaultMemos: MemoItem[] = [];
+
+function isMemoItem(value: unknown): value is MemoItem {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "id" in value &&
+    "text" in value &&
+    "done" in value &&
+    "tag" in value &&
+    typeof value.id === "string" &&
+    typeof value.text === "string" &&
+    typeof value.done === "boolean" &&
+    typeof value.tag === "string" &&
+    value.id.length > 0 &&
+    value.text.length <= MAX_MEMO_TEXT_LENGTH &&
+    value.tag.length <= MAX_MEMO_TAG_LENGTH
+  );
+}
+
+function normalizeMemos(value: unknown): MemoItem[] {
+  if (!Array.isArray(value)) return defaultMemos;
+  return value.filter(isMemoItem).slice(0, MAX_MEMOS);
+}
 
 export function usePersistedMemos() {
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const storeRef = useRef<Store | null>(null);
 
-  // 起動時に1回だけファイルから読み込む
   useEffect(() => {
     let cancelled = false;
 
@@ -26,18 +51,18 @@ export function usePersistedMemos() {
       const store = await load(STORE_FILE, { autoSave: false, defaults: {} });
       storeRef.current = store;
 
-      const saved = await store.get<MemoItem[]>(STORE_KEY);
+      const saved = await store.get<unknown>(STORE_KEY);
+      const initialMemos = normalizeMemos(saved);
 
       if (cancelled) return;
 
-      if (saved && saved.length > 0) {
-        setMemos(saved);
-      } else {
-        // 初回起動時はサンプルデータを入れておく
-        setMemos(defaultMemos);
-        await store.set(STORE_KEY, defaultMemos);
+      setMemos(initialMemos);
+
+      if (JSON.stringify(initialMemos) !== JSON.stringify(saved)) {
+        await store.set(STORE_KEY, initialMemos);
         await store.save();
       }
+
       setIsLoaded(true);
     };
 
@@ -52,7 +77,6 @@ export function usePersistedMemos() {
     };
   }, []);
 
-  // memosが変わるたびファイルに書き込む(初回ロード完了後のみ)
   useEffect(() => {
     if (!isLoaded || !storeRef.current) return;
 

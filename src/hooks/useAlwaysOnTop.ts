@@ -4,25 +4,34 @@ import { useCallback, useEffect, useState } from "react";
 
 const STORE_FILE = "settings.json";
 const STORE_KEY = "alwaysOnTop";
+const DEFAULT_ALWAYS_ON_TOP = false;
+
+function isBoolean(value: unknown): value is boolean {
+  return typeof value === "boolean";
+}
 
 export function useAlwaysOnTop() {
   const [isPinned, setIsPinned] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 起動時に前回の設定を復元
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
       const store = await load(STORE_FILE, { autoSave: false, defaults: {} });
-      const saved = await store.get<boolean>(STORE_KEY);
-      const initial = saved ?? false;
+      const saved = await store.get<unknown>(STORE_KEY);
+      const initial = isBoolean(saved) ? saved : DEFAULT_ALWAYS_ON_TOP;
 
       if (cancelled) return;
 
       setIsPinned(initial);
       await getCurrentWindow().setAlwaysOnTop(initial);
       setIsLoaded(true);
+
+      if (!isBoolean(saved)) {
+        await store.set(STORE_KEY, initial);
+        await store.save();
+      }
     };
 
     init().catch((err) => {
@@ -45,7 +54,7 @@ export function useAlwaysOnTop() {
       await store.save();
     } catch (err) {
       console.error("Failed to toggle always-on-top:", err);
-      setIsPinned(!next); // 失敗したらUIの状態を元に戻す
+      setIsPinned(!next);
     }
   }, [isPinned]);
 

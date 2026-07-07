@@ -23,7 +23,7 @@ vi.mock("@tauri-apps/api/window", () => ({
   }),
 }));
 
-function createStore(savedPinned: boolean | undefined): MockStore {
+function createStore(savedPinned: unknown): MockStore {
   return {
     get: vi.fn().mockResolvedValue(savedPinned),
     set: vi.fn().mockResolvedValue(undefined),
@@ -48,6 +48,21 @@ describe("useAlwaysOnTop", () => {
 
     expect(result.current.isPinned).toBe(true);
     expect(mocks.setAlwaysOnTop).toHaveBeenCalledWith(true);
+  });
+
+  it("uses and persists the default pinned state when saved value is invalid", async () => {
+    const store = createStore("yes");
+    mocks.load.mockResolvedValue(store);
+    mocks.setAlwaysOnTop.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useAlwaysOnTop());
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(true));
+
+    expect(result.current.isPinned).toBe(false);
+    expect(mocks.setAlwaysOnTop).toHaveBeenCalledWith(false);
+    expect(store.set).toHaveBeenCalledWith("alwaysOnTop", false);
+    expect(store.save).toHaveBeenCalledTimes(1);
   });
 
   it("toggles, applies, and persists the pinned state", async () => {

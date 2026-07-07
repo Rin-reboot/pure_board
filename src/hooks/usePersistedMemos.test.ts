@@ -1,6 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { MemoItem } from "./usePersistedMemos";
 import { usePersistedMemos } from "./usePersistedMemos";
 
 interface MockStore {
@@ -17,7 +16,7 @@ vi.mock("@tauri-apps/plugin-store", () => ({
   load: storeMocks.load,
 }));
 
-function createStore(savedMemos: MemoItem[] | undefined): MockStore {
+function createStore(savedMemos: unknown): MockStore {
   return {
     get: vi.fn().mockResolvedValue(savedMemos),
     set: vi.fn().mockResolvedValue(undefined),
@@ -54,6 +53,29 @@ describe("usePersistedMemos", () => {
 
     expect(result.current.memos).toEqual([]);
     expect(store.set).toHaveBeenCalledWith("memos", []);
+    expect(store.save).toHaveBeenCalled();
+  });
+
+  it("drops invalid saved memo entries and persists the normalized list", async () => {
+    const validMemo = {
+      id: "memo-1",
+      text: "Review tests",
+      done: false,
+      tag: "莉頑律荳ｭ",
+    };
+    const store = createStore([
+      validMemo,
+      { id: "memo-2", text: "missing done", tag: "譏取律" },
+      "invalid",
+    ]);
+    storeMocks.load.mockResolvedValue(store);
+
+    const { result } = renderHook(() => usePersistedMemos());
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(true));
+
+    expect(result.current.memos).toEqual([validMemo]);
+    expect(store.set).toHaveBeenCalledWith("memos", [validMemo]);
     expect(store.save).toHaveBeenCalled();
   });
 

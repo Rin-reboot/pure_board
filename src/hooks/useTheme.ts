@@ -13,27 +13,29 @@ function getSystemTheme(): Theme {
     : "dark";
 }
 
+function isTheme(value: unknown): value is Theme {
+  return value === "dark" || value === "light";
+}
+
 export function useTheme() {
   const [theme, setThemeState] = useState<Theme>("dark");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 起動時: 保存済みの設定があれば使い、無ければOS設定を参照する
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
       const store = await load(STORE_FILE, { autoSave: false, defaults: {} });
-      const saved = await store.get<Theme>(STORE_KEY);
+      const saved = await store.get<unknown>(STORE_KEY);
 
       if (cancelled) return;
 
-      const initialTheme = saved ?? getSystemTheme();
+      const initialTheme = isTheme(saved) ? saved : getSystemTheme();
       setThemeState(initialTheme);
       document.documentElement.setAttribute("data-theme", initialTheme);
       setIsLoaded(true);
 
-      // 保存設定が無かった(初回起動)場合は、参照したOS設定を書き込んでおく
-      if (!saved) {
+      if (!isTheme(saved)) {
         await store.set(STORE_KEY, initialTheme);
         await store.save();
       }
