@@ -11,15 +11,17 @@ import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useCpuHistory } from "./hooks/useCpuHistory";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
+import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
 
 // TODO: ネットワーク速度・Pingを取得するRustコマンドができたら置き換える
 const MOCK_NETWORK = { downloadMbps: 120, uploadMbps: 28, pingMs: 8 };
 
 function App() {
-  const usage = useSystemUsage();
-  const cpuHistory = useCpuHistory(usage?.cpu_usage);
   const { theme, toggleTheme } = useTheme();
   const { isPinned, togglePin } = useAlwaysOnTop();
+  const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
+  const usage = useSystemUsage(updateIntervalMs);
+  const cpuHistory = useCpuHistory(usage?.cpu_usage);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -30,7 +32,12 @@ function App() {
         onTogglePin={togglePin}
         onToggleSettings={() => setIsSettingsOpen((prev) => !prev)}
       />
-      {isSettingsOpen ? <SettingsPanel updateIntervalLabel="1.5s" /> : null}
+      {isSettingsOpen ? (
+        <SettingsPanel
+          updateIntervalMs={updateIntervalMs}
+          onUpdateIntervalChange={setUpdateIntervalMs}
+        />
+      ) : null}
 
       <div className="card-stack">
         <CpuCard

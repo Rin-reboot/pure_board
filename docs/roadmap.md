@@ -33,6 +33,7 @@ The following features are already implemented:
 * CPU usage waveform graph
 * RAM usage circular gauge
 * RAM usage display
+* configurable system usage update interval with a 0.1s minimum
 * memo widget
 * memo add / complete / delete behavior
 * memo tag selection
@@ -72,16 +73,15 @@ Purpose:
 
 * provide a place for runtime preferences
 * show the current system usage update interval
+* allow users to enter custom update intervals with a 0.1s minimum
+* preserve selected settings
 
 Future extensions:
 
-* allow users to change update intervals
-* expose basic runtime preferences
-* preserve selected settings
+* expose additional runtime preferences
 
 Possible settings:
 
-* system usage polling interval
 * graph history length
 * theme preference
 * startup behavior
