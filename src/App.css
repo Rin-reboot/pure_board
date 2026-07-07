@@ -168,6 +168,7 @@ body,
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
   padding: 18px;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -225,8 +226,10 @@ body,
 }
 
 .card-detail-title {
+  min-width: 0;
   font-size: 0.85rem;
   color: var(--text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .card-detail-title strong {
@@ -246,7 +249,9 @@ body,
 
 .card-detail-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  gap: 4px 10px;
   font-size: 0.75rem;
   color: var(--text-tertiary);
 }
@@ -424,6 +429,7 @@ body,
   flex: 1;
   font-size: 0.85rem;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .memo-text-done {
@@ -508,6 +514,7 @@ body,
 
 .memo-input-row input {
   flex: 1;
+  min-width: 0;
   background-color: var(--surface-input);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
