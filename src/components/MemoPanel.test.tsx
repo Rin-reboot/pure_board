@@ -62,6 +62,21 @@ describe("MemoPanel", () => {
     expect(within(getByRole("listitem")).getByText("今日中")).toBeTruthy();
   });
 
+  it("switches to the list view", () => {
+    mockMemos({
+      memos: [
+        { id: "memo-1", text: "Review tests", done: false, tag: "today" },
+        { id: "memo-2", text: "Ship release", done: true, tag: "tomorrow" },
+      ],
+    });
+
+    const { getByLabelText, getByText } = render(<MemoPanel />);
+
+    fireEvent.click(getByLabelText("リストビューを切り替え"));
+
+    expect(getByText("2 / 2")).toBeTruthy();
+  });
+
   it("toggles a memo through the setter updater", () => {
     const setMemos = vi.fn();
     mockMemos({

@@ -37,6 +37,7 @@ The following features are already implemented:
 * memo widget
 * memo add / complete / delete behavior
 * memo tag selection
+* memo list view
 * memo persistence
 * settings panel
 * dark mode / light mode toggle
@@ -115,7 +116,7 @@ Implemented behavior:
 
 ## Memo List View
 
-Status: planned
+Status: implemented
 
 Purpose:
 

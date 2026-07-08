@@ -1,6 +1,7 @@
-import { MoreHorizontal, Plus, Send, StickyNote, X } from "lucide-react";
+import { ListFilter, Plus, Send, StickyNote } from "lucide-react";
 import { useState } from "react";
 import { usePersistedMemos } from "../hooks/usePersistedMemos";
+import { MemoListView } from "./MemoListView";
 
 const TAG_PRESETS = ["今日中", "明日", "今週中", "未定"];
 
@@ -8,6 +9,7 @@ export function MemoPanel() {
   const { memos, setMemos, deleteMemo, isLoaded } = usePersistedMemos();
   const [draft, setDraft] = useState("");
   const [selectedTag, setSelectedTag] = useState(TAG_PRESETS[0]);
+  const [isListView, setIsListView] = useState(false);
 
   const toggleMemo = (id: string) => {
     setMemos((prev) =>
@@ -38,8 +40,14 @@ export function MemoPanel() {
           <button type="button" onClick={addMemo} aria-label="メモを追加">
             <Plus size={14} />
           </button>
-          <button type="button" aria-label="メニュー">
-            <MoreHorizontal size={14} />
+          <button
+            type="button"
+            className={isListView ? "memo-view-toggle-active" : ""}
+            onClick={() => setIsListView((current) => !current)}
+            aria-pressed={isListView}
+            aria-label="リストビューを切り替え"
+          >
+            <ListFilter size={14} />
           </button>
         </div>
       </div>
@@ -47,36 +55,12 @@ export function MemoPanel() {
       {!isLoaded ? (
         <p className="memo-loading">読み込み中...</p>
       ) : (
-        <ul className="memo-list">
-          {memos.map((memo) => (
-            <li key={memo.id} className="memo-item">
-              <label className="memo-checkbox">
-                <input
-                  type="checkbox"
-                  checked={memo.done}
-                  onChange={() => toggleMemo(memo.id)}
-                />
-                <span className="memo-checkbox-box" />
-              </label>
-              <span
-                className={`memo-text ${memo.done ? "memo-text-done" : ""}`}
-              >
-                {memo.text}
-              </span>
-              <span className={`memo-tag ${memo.done ? "memo-tag-done" : ""}`}>
-                {memo.tag}
-              </span>
-              <button
-                type="button"
-                className="memo-delete"
-                onClick={() => deleteMemo(memo.id)}
-                aria-label="削除"
-              >
-                <X size={13} />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <MemoListView
+          memos={memos}
+          isExpanded={isListView}
+          onToggleMemo={toggleMemo}
+          onDeleteMemo={deleteMemo}
+        />
       )}
 
       <div className="memo-input-row">
