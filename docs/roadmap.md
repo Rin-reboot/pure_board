@@ -35,6 +35,7 @@ The following features are already implemented:
 * RAM usage display
 * detailed CPU / RAM history view
 * configurable system usage update interval with a 0.1s minimum
+* actual processor name display
 * memo widget
 * memo add / complete / delete behavior
 * memo tag selection
@@ -59,8 +60,6 @@ The following values are currently placeholders:
 None.
 
 Network speed and Ping are retrieved by Rust commands. Ping is measured only when the user presses the Ping button, avoiding periodic traffic to external services.
-
-Do not treat them as bugs unless the task explicitly asks to replace placeholders with real values.
 
 ---
 
@@ -194,18 +193,22 @@ Implemented behavior:
 
 ## Real Processor Name
 
-Status: planned
+Status: implemented
 
 Current state:
 
-* processor name is displayed as a fixed placeholder
+* processor name is retrieved from the operating system through Rust
 
 Goal:
 
 * obtain actual processor name from the operating system
 * expose it through a Tauri command
 
-Implementation should prioritize Windows correctness.
+Implemented behavior:
+
+* Rust reads the first CPU brand from `sysinfo`
+* frontend displays the returned processor name in the CPU widget
+* an empty value falls back to `Unknown CPU`
 
 ---
 
