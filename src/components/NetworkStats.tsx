@@ -1,16 +1,26 @@
-import { ArrowDown, ArrowUp, Network } from "lucide-react";
+import { ArrowDown, ArrowUp, Network, RefreshCw } from "lucide-react";
 
 interface NetworkStatsProps {
   downloadMbps: number;
   uploadMbps: number;
-  pingMs: number;
+  pingMs: number | null;
+  pingTargetLabel: string;
+  isMeasuringPing: boolean;
+  onMeasurePing: () => void;
 }
 
 export function NetworkStats({
   downloadMbps,
   uploadMbps,
   pingMs,
+  pingTargetLabel,
+  isMeasuringPing,
+  onMeasurePing,
 }: NetworkStatsProps) {
+  const formattedDownload = formatMbps(downloadMbps);
+  const formattedUpload = formatMbps(uploadMbps);
+  const formattedPing = pingMs === null ? "--" : Math.round(pingMs).toString();
+
   return (
     <section className="card network-card">
       <div className="network-stat">
@@ -21,7 +31,7 @@ export function NetworkStats({
         />
         <span className="network-label">ダウンロード</span>
         <span className="network-value" style={{ color: "var(--accent-cpu)" }}>
-          {downloadMbps} <small>Mbps</small>
+          {formattedDownload} <small>Mbps</small>
         </span>
       </div>
       <div className="network-divider" />
@@ -33,24 +43,35 @@ export function NetworkStats({
         />
         <span className="network-label">アップロード</span>
         <span className="network-value" style={{ color: "var(--accent-ram)" }}>
-          {uploadMbps} <small>Mbps</small>
+          {formattedUpload} <small>Mbps</small>
         </span>
       </div>
       <div className="network-divider" />
       <div className="network-stat">
-        <Network
-          size={14}
-          className="network-icon"
-          style={{ color: "var(--accent-network)" }}
-        />
+        <button
+          type="button"
+          className="network-ping-button"
+          onClick={onMeasurePing}
+          disabled={isMeasuringPing}
+          aria-label={`Measure ping to ${pingTargetLabel}`}
+          title={`Measure ping to ${pingTargetLabel}`}
+        >
+          {isMeasuringPing ? <RefreshCw size={14} /> : <Network size={14} />}
+        </button>
         <span className="network-label">Ping</span>
         <span
           className="network-value"
           style={{ color: "var(--accent-network)" }}
         >
-          {pingMs} <small>ms</small>
+          {formattedPing} <small>ms</small>
         </span>
       </div>
     </section>
   );
+}
+
+function formatMbps(value: number): string {
+  if (!Number.isFinite(value)) return "0.0";
+
+  return value.toFixed(value < 10 ? 1 : 0);
 }

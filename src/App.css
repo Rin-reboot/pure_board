@@ -352,6 +352,101 @@ body,
 }
 
 /* ============================================================
+   CPU / RAM history view
+   ============================================================ */
+.system-history-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.system-history-header,
+.history-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.system-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.system-history-title svg {
+  color: var(--accent-cpu);
+}
+
+.system-history-window {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.history-section-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.history-metrics {
+  display: flex;
+  gap: 8px;
+}
+
+.history-metric {
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.history-metric-label {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.history-metric-value {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-chart {
+  width: 100%;
+  height: 120px;
+  display: block;
+  overflow: visible;
+}
+
+.history-chart line {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.history-chart-area {
+  opacity: 0.12;
+}
+
+/* ============================================================
    Network card
    ============================================================ */
 .network-card {
@@ -384,6 +479,27 @@ body,
   font-weight: 500;
   color: var(--text-secondary);
   margin-left: 2px;
+}
+
+.network-ping-button {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 7px;
+  background-color: transparent;
+  color: var(--accent-network);
+  cursor: pointer;
+}
+
+.network-ping-button:hover:not(:disabled) {
+  background-color: var(--hover-overlay);
+}
+
+.network-ping-button:disabled {
+  cursor: default;
+  opacity: 0.62;
 }
 
 .network-divider {

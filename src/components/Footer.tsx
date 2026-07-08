@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import type { Theme } from "../hooks/useTheme";
 
 interface FooterProps {
+  isHistoryOpen: boolean;
   isEditMode: boolean;
   theme: Theme;
+  onToggleHistory: () => void;
   onToggleEditMode: () => void;
   onToggleTheme: () => void;
 }
@@ -17,8 +19,10 @@ function formatDateTime(date: Date): string {
 }
 
 export function Footer({
+  isHistoryOpen,
   isEditMode,
   theme,
+  onToggleHistory,
   onToggleEditMode,
   onToggleTheme,
 }: FooterProps) {
@@ -44,7 +48,13 @@ export function Footer({
         <button type="button" aria-label="List">
           <ClipboardList size={14} />
         </button>
-        <button type="button" aria-label="Graph">
+        <button
+          type="button"
+          aria-label="Graph"
+          aria-pressed={isHistoryOpen}
+          className={isHistoryOpen ? "is-active" : ""}
+          onClick={onToggleHistory}
+        >
           <BarChart3 size={14} />
         </button>
       </div>

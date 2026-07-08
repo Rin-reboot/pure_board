@@ -16,8 +16,10 @@ describe("Footer", () => {
   it("renders the current date and updates every thirty seconds", () => {
     const { getByText } = render(
       <Footer
+        isHistoryOpen={false}
         isEditMode={false}
         theme="dark"
+        onToggleHistory={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleTheme={vi.fn()}
       />,
@@ -37,8 +39,10 @@ describe("Footer", () => {
     const onToggleTheme = vi.fn();
     const { getByLabelText } = render(
       <Footer
+        isHistoryOpen={false}
         isEditMode={false}
         theme="light"
+        onToggleHistory={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleTheme={onToggleTheme}
       />,
@@ -53,8 +57,10 @@ describe("Footer", () => {
     const onToggleEditMode = vi.fn();
     const { getByLabelText } = render(
       <Footer
+        isHistoryOpen={false}
         isEditMode={false}
         theme="dark"
+        onToggleHistory={vi.fn()}
         onToggleEditMode={onToggleEditMode}
         onToggleTheme={vi.fn()}
       />,
@@ -63,5 +69,23 @@ describe("Footer", () => {
     fireEvent.click(getByLabelText("Edit mode"));
 
     expect(onToggleEditMode).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the history toggle handler", () => {
+    const onToggleHistory = vi.fn();
+    const { getByLabelText } = render(
+      <Footer
+        isHistoryOpen={false}
+        isEditMode={false}
+        theme="dark"
+        onToggleHistory={onToggleHistory}
+        onToggleEditMode={vi.fn()}
+        onToggleTheme={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(getByLabelText("Graph"));
+
+    expect(onToggleHistory).toHaveBeenCalledTimes(1);
   });
 });

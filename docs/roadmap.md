@@ -33,6 +33,7 @@ The following features are already implemented:
 * CPU usage waveform graph
 * RAM usage circular gauge
 * RAM usage display
+* detailed CPU / RAM history view
 * configurable system usage update interval with a 0.1s minimum
 * memo widget
 * memo add / complete / delete behavior
@@ -55,11 +56,9 @@ The following features are already implemented:
 
 The following values are currently placeholders:
 
-* processor name
-* network speed
-* ping
+None.
 
-These placeholders exist because UI implementation was prioritized first.
+Network speed and Ping are retrieved by Rust commands. Ping is measured only when the user presses the Ping button, avoiding periodic traffic to external services.
 
 Do not treat them as bugs unless the task explicitly asks to replace placeholders with real values.
 
@@ -130,14 +129,19 @@ This should build on the existing memo model rather than replacing it.
 
 ## Detailed CPU / RAM History View
 
-Status: planned
+Status: implemented
 
 Purpose:
 
 * provide a larger graph view for historical CPU and RAM usage
 * make system trends easier to inspect
 
-This should reuse existing polling and buffering logic where possible.
+Implemented behavior:
+
+* toggled from the footer graph button
+* reuses the existing system usage polling flow
+* keeps CPU and RAM usage history in frontend memory
+* shows current, average, and maximum values for the retained history window
 
 ---
 
@@ -145,11 +149,11 @@ This should reuse existing polling and buffering logic where possible.
 
 ## Real Network Speed
 
-Status: planned
+Status: implemented
 
 Current state:
 
-* displayed values are mock / placeholder values
+* displayed values are calculated from network interface byte deltas
 
 Goal:
 
@@ -157,17 +161,21 @@ Goal:
 * display upload and download speed
 * keep polling lightweight
 
-Implementation should likely occur in Rust.
+Implemented behavior:
+
+* Rust collects network interface received / transmitted byte deltas with `sysinfo`
+* frontend displays download and upload throughput in Mbps
+* values represent current PC network activity, not link speed or ISP speed-test results
 
 ---
 
 ## Real Ping
 
-Status: planned
+Status: implemented
 
 Current state:
 
-* displayed value is mock / placeholder data
+* Ping is measured manually only
 
 Goal:
 
@@ -176,7 +184,11 @@ Goal:
 
 Implementation should be conservative.
 
-Avoid aggressive polling.
+Implemented behavior:
+
+* Ping is triggered by a button in the Network widget
+* the app does not send periodic Ping traffic
+* the initial target is Google DNS over TCP, `8.8.8.8:443`
 
 ---
 

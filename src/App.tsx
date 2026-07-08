@@ -1,22 +1,36 @@
 import "./App.css";
-import { type PointerEvent, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import {
+  type PointerEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
 import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { SystemHistoryView } from "./components/SystemHistoryView";
 import { TitleBar } from "./components/TitleBar";
 import { WidgetFrame } from "./components/WidgetFrame";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
-import { useCpuHistory } from "./hooks/useCpuHistory";
+import { useNetworkUsage } from "./hooks/useNetworkUsage";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
 import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
+import { useUsageHistory } from "./hooks/useUsageHistory";
 import { useWidgetLayout, type WidgetId } from "./hooks/useWidgetLayout";
 
-// TODO: ネットワーク速度・Pingを取得するRustコマンドができたら置き換える
-const MOCK_NETWORK = { downloadMbps: 120, uploadMbps: 28, pingMs: 8 };
+const DETAIL_HISTORY_LENGTH = 120;
+const CARD_HISTORY_LENGTH = 40;
+const PING_TARGET = { label: "Google DNS", host: "8.8.8.8", port: 443 };
+
+interface PingResult {
+  latency_ms: number;
+}
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -24,13 +38,46 @@ function App() {
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
-  const cpuHistory = useCpuHistory(usage?.cpu_usage);
+  const networkUsage = useNetworkUsage(updateIntervalMs);
+  const ramUsagePercent =
+    usage && usage.mem_total > 0 ? (usage.mem_used / usage.mem_total) * 100 : 0;
+  const cpuHistory = useUsageHistory(usage?.cpu_usage, {
+    length: DETAIL_HISTORY_LENGTH,
+  });
+  const ramHistory = useUsageHistory(usage ? ramUsagePercent : undefined, {
+    length: DETAIL_HISTORY_LENGTH,
+  });
+  const cpuCardHistory = useMemo(
+    () => cpuHistory.slice(-CARD_HISTORY_LENGTH),
+    [cpuHistory],
+  );
+  const [pingMs, setPingMs] = useState<number | null>(null);
+  const [isMeasuringPing, setIsMeasuringPing] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [draggingWidgetId, setDraggingWidgetId] = useState<WidgetId | null>(
     null,
   );
   const stackRef = useRef<HTMLDivElement | null>(null);
+
+  const handleMeasurePing = useCallback(async () => {
+    setIsMeasuringPing(true);
+    try {
+      const result = await invoke<PingResult>("measure_ping", {
+        target: {
+          host: PING_TARGET.host,
+          port: PING_TARGET.port,
+        },
+      });
+      setPingMs(result.latency_ms);
+    } catch (err) {
+      console.error("Failed to measure ping:", err);
+      setPingMs(null);
+    } finally {
+      setIsMeasuringPing(false);
+    }
+  }, []);
 
   const renderWidget = (id: WidgetId) => {
     switch (id) {
@@ -39,7 +86,7 @@ function App() {
           <CpuCard
             usage={usage?.cpu_usage ?? 0}
             processorName={usage?.cpu_name ?? "Unknown CPU"}
-            history={cpuHistory}
+            history={cpuCardHistory}
           />
         );
       case "ram":
@@ -50,7 +97,16 @@ function App() {
           />
         );
       case "network":
-        return <NetworkStats {...MOCK_NETWORK} />;
+        return (
+          <NetworkStats
+            downloadMbps={networkUsage?.download_mbps ?? 0}
+            uploadMbps={networkUsage?.upload_mbps ?? 0}
+            pingMs={pingMs}
+            pingTargetLabel={PING_TARGET.label}
+            isMeasuringPing={isMeasuringPing}
+            onMeasurePing={handleMeasurePing}
+          />
+        );
       case "memo":
         return <MemoPanel />;
     }
@@ -126,6 +182,13 @@ function App() {
         onPointerUp={handleWidgetDragEnd}
         onPointerCancel={handleWidgetDragEnd}
       >
+        {isHistoryOpen ? (
+          <SystemHistoryView
+            cpuHistory={cpuHistory}
+            ramHistory={ramHistory}
+            updateIntervalMs={updateIntervalMs}
+          />
+        ) : null}
         {layout
           .filter((widget) => isEditMode || widget.visible)
           .map((widget) => (
@@ -145,8 +208,10 @@ function App() {
       </div>
 
       <Footer
+        isHistoryOpen={isHistoryOpen}
         isEditMode={isEditMode}
         theme={theme}
+        onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
         onToggleEditMode={() => setIsEditMode((prev) => !prev)}
         onToggleTheme={toggleTheme}
       />
