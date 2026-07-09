@@ -2,20 +2,7 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TitleBar } from "./TitleBar";
 
-const windowMocks = vi.hoisted(() => ({
-  close: vi.fn(),
-}));
-
-vi.mock("@tauri-apps/api/window", () => ({
-  getCurrentWindow: () => ({
-    close: windowMocks.close,
-  }),
-}));
-
-afterEach(() => {
-  windowMocks.close.mockClear();
-  cleanup();
-});
+afterEach(cleanup);
 
 describe("TitleBar", () => {
   it("reflects the pinned state and calls the toggle handler", () => {
@@ -25,11 +12,12 @@ describe("TitleBar", () => {
         isDragEnabled={true}
         isPinned={true}
         isSettingsOpen={false}
+        onCloseRequest={vi.fn()}
         onTogglePin={onTogglePin}
         onToggleSettings={vi.fn()}
       />,
     );
-    const pinButton = getByLabelText("常に最前面に表示");
+    const pinButton = getByLabelText("Toggle always on top");
 
     expect(pinButton.getAttribute("aria-pressed")).toBe("true");
     expect(pinButton.className).toContain("is-active");
@@ -46,11 +34,12 @@ describe("TitleBar", () => {
         isDragEnabled={true}
         isPinned={false}
         isSettingsOpen={true}
+        onCloseRequest={vi.fn()}
         onTogglePin={vi.fn()}
         onToggleSettings={onToggleSettings}
       />,
     );
-    const settingsButton = getByLabelText("設定");
+    const settingsButton = getByLabelText("Toggle settings");
 
     expect(settingsButton.getAttribute("aria-pressed")).toBe("true");
     expect(settingsButton.className).toContain("is-active");
@@ -60,20 +49,22 @@ describe("TitleBar", () => {
     expect(onToggleSettings).toHaveBeenCalledTimes(1);
   });
 
-  it("closes the current window", () => {
+  it("calls the close request handler", () => {
+    const onCloseRequest = vi.fn();
     const { getByLabelText } = render(
       <TitleBar
         isDragEnabled={true}
         isPinned={false}
         isSettingsOpen={false}
+        onCloseRequest={onCloseRequest}
         onTogglePin={vi.fn()}
         onToggleSettings={vi.fn()}
       />,
     );
 
-    fireEvent.click(getByLabelText("閉じる"));
+    fireEvent.click(getByLabelText("Close"));
 
-    expect(windowMocks.close).toHaveBeenCalledTimes(1);
+    expect(onCloseRequest).toHaveBeenCalledTimes(1);
   });
 
   it("omits the Tauri drag region when dragging is disabled", () => {
@@ -82,6 +73,7 @@ describe("TitleBar", () => {
         isDragEnabled={false}
         isPinned={false}
         isSettingsOpen={false}
+        onCloseRequest={vi.fn()}
         onTogglePin={vi.fn()}
         onToggleSettings={vi.fn()}
       />,

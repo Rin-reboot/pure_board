@@ -5,6 +5,11 @@ use std::{
     time::{Duration, Instant},
 };
 use sysinfo::{Networks, System};
+use tauri::{
+    menu::{Menu, MenuItem, PredefinedMenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    AppHandle, Manager,
+};
 
 // フロントに返すデータの形。Serializeを付けるとJSONに変換できるようになる
 #[derive(Serialize)]
@@ -128,6 +133,83 @@ fn bytes_to_mbps(bytes: u64, elapsed: Duration) -> f64 {
     bytes as f64 * 8.0 / elapsed_seconds / 1_000_000.0
 }
 
+fn show_main_window_inner(app: &AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "Main window was not found".to_string())?;
+
+    window
+        .show()
+        .map_err(|err| format!("Failed to show main window: {err}"))?;
+    window
+        .set_focus()
+        .map_err(|err| format!("Failed to focus main window: {err}"))?;
+
+    Ok(())
+}
+
+fn hide_main_window_inner(app: &AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "Main window was not found".to_string())?;
+
+    window
+        .hide()
+        .map_err(|err| format!("Failed to hide main window: {err}"))
+}
+
+fn setup_tray(app: &mut tauri::App) -> tauri::Result<()> {
+    let open_item = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let separator = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(app, &[&open_item, &separator, &quit_item])?;
+
+    let mut tray_builder = TrayIconBuilder::with_id("main-tray")
+        .tooltip("pure_board")
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "open" => {
+                let _ = show_main_window_inner(app);
+            }
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                let _ = show_main_window_inner(tray.app_handle());
+            }
+        });
+
+    if let Some(icon) = app.default_window_icon() {
+        tray_builder = tray_builder.icon(icon.clone());
+    }
+
+    tray_builder.build(app)?;
+
+    Ok(())
+}
+
+#[tauri::command]
+fn show_main_window(app: AppHandle) -> Result<(), String> {
+    show_main_window_inner(&app)
+}
+
+#[tauri::command]
+fn hide_main_window(app: AppHandle) -> Result<(), String> {
+    hide_main_window_inner(&app)
+}
+
+#[tauri::command]
+fn quit_app(app: AppHandle) {
+    app.exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -139,6 +221,7 @@ pub fn run() {
                     tauri_plugin_autostart::MacosLauncher::LaunchAgent,
                     None,
                 ))?;
+                setup_tray(app)?;
             }
 
             Ok(())
@@ -151,7 +234,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_system_usage,
             get_network_usage,
-            measure_ping
+            measure_ping,
+            show_main_window,
+            hide_main_window,
+            quit_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

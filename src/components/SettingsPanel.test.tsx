@@ -8,9 +8,11 @@ describe("SettingsPanel", () => {
   it("renders the settings title and update interval", () => {
     const { getByLabelText, getByText } = render(
       <SettingsPanel
+        closeActionPreference="ask"
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -22,16 +24,23 @@ describe("SettingsPanel", () => {
     expect(getByText("Application")).toBeTruthy();
     expect(getByText("Update interval")).toBeTruthy();
     expect(getByText("Launch at startup")).toBeTruthy();
+    expect(getByText("Close button behavior")).toBeTruthy();
     expect(getByLabelText("Update interval")).toHaveProperty("value", "1.5");
+    expect(getByLabelText("Close button behavior")).toHaveProperty(
+      "value",
+      "ask",
+    );
   });
 
   it("calls the interval change handler with the entered value in milliseconds", () => {
     const onUpdateIntervalChange = vi.fn();
     const { getByLabelText } = render(
       <SettingsPanel
+        closeActionPreference="ask"
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={onUpdateIntervalChange}
       />,
@@ -48,9 +57,11 @@ describe("SettingsPanel", () => {
     const onToggleAutoStart = vi.fn();
     const { getByLabelText } = render(
       <SettingsPanel
+        closeActionPreference="ask"
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
         onToggleAutoStart={onToggleAutoStart}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -64,9 +75,11 @@ describe("SettingsPanel", () => {
   it("disables the auto-start toggle until the setting is loaded", () => {
     const { getByLabelText } = render(
       <SettingsPanel
+        closeActionPreference="ask"
         isAutoStartEnabled={false}
         isAutoStartLoaded={false}
         updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -75,6 +88,29 @@ describe("SettingsPanel", () => {
     expect(getByLabelText("Launch at startup")).toHaveProperty(
       "disabled",
       true,
+    );
+  });
+
+  it("calls the close action preference change handler", () => {
+    const onCloseActionPreferenceChange = vi.fn();
+    const { getByLabelText } = render(
+      <SettingsPanel
+        closeActionPreference="ask"
+        isAutoStartEnabled={false}
+        isAutoStartLoaded={true}
+        updateIntervalMs={1500}
+        onCloseActionPreferenceChange={onCloseActionPreferenceChange}
+        onToggleAutoStart={vi.fn()}
+        onUpdateIntervalChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(getByLabelText("Close button behavior"), {
+      target: { value: "minimizeToTray" },
+    });
+
+    expect(onCloseActionPreferenceChange).toHaveBeenCalledWith(
+      "minimizeToTray",
     );
   });
 });

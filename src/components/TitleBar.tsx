@@ -1,10 +1,10 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LineChart, Pin, Settings, X } from "lucide-react";
 
 interface TitleBarProps {
   isDragEnabled: boolean;
   isPinned: boolean;
   isSettingsOpen: boolean;
+  onCloseRequest: () => void;
   onTogglePin: () => void;
   onToggleSettings: () => void;
 }
@@ -13,13 +13,10 @@ export function TitleBar({
   isDragEnabled,
   isPinned,
   isSettingsOpen,
+  onCloseRequest,
   onTogglePin,
   onToggleSettings,
 }: TitleBarProps) {
-  const handleClose = () => {
-    getCurrentWindow().close();
-  };
-
   return (
     <header
       className="title-bar"
@@ -33,7 +30,7 @@ export function TitleBar({
         <button
           type="button"
           onClick={onTogglePin}
-          aria-label="常に最前面に表示"
+          aria-label="Toggle always on top"
           aria-pressed={isPinned}
           className={isPinned ? "is-active" : ""}
         >
@@ -42,13 +39,13 @@ export function TitleBar({
         <button
           type="button"
           onClick={onToggleSettings}
-          aria-label="設定"
+          aria-label="Toggle settings"
           aria-pressed={isSettingsOpen}
           className={isSettingsOpen ? "is-active" : ""}
         >
           <Settings size={15} />
         </button>
-        <button type="button" onClick={handleClose} aria-label="閉じる">
+        <button type="button" onClick={onCloseRequest} aria-label="Close">
           <X size={15} />
         </button>
       </div>

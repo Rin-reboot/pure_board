@@ -175,11 +175,13 @@ Avoid implementing custom behavior unless necessary.
 
 # Task Tray
 
-Task tray functionality is planned.
+Task tray functionality is implemented.
 
 Implementation should prioritize Windows behavior.
 
 Platform-specific handling may be introduced when necessary, but only within isolated code paths.
+
+The close button can either exit the app or hide the main window while keeping the app resident in the tray. Users can choose the behavior from Settings.
 
 ---
 

@@ -1,17 +1,22 @@
+import type { CloseActionPreference } from "../hooks/useCloseActionPreference";
 import { MIN_UPDATE_INTERVAL_MS } from "../hooks/useUpdateIntervalSetting";
 
 interface SettingsPanelProps {
+  closeActionPreference: CloseActionPreference;
   isAutoStartEnabled: boolean;
   isAutoStartLoaded: boolean;
   updateIntervalMs: number;
+  onCloseActionPreferenceChange: (value: CloseActionPreference) => void;
   onToggleAutoStart: () => void;
   onUpdateIntervalChange: (valueMs: number) => void;
 }
 
 export function SettingsPanel({
+  closeActionPreference,
   isAutoStartEnabled,
   isAutoStartLoaded,
   updateIntervalMs,
+  onCloseActionPreferenceChange,
   onToggleAutoStart,
   onUpdateIntervalChange,
 }: SettingsPanelProps) {
@@ -71,6 +76,28 @@ export function SettingsPanel({
           >
             <span className="settings-switch-thumb" />
           </button>
+        </div>
+        <div className="settings-row">
+          <div className="settings-row-copy">
+            <span className="settings-row-label">Close button behavior</span>
+            <span className="settings-row-value">
+              Choose what happens when closing the window
+            </span>
+          </div>
+          <select
+            className="settings-select"
+            value={closeActionPreference}
+            onChange={(event) =>
+              onCloseActionPreferenceChange(
+                event.target.value as CloseActionPreference,
+              )
+            }
+            aria-label="Close button behavior"
+          >
+            <option value="ask">Ask every time</option>
+            <option value="minimizeToTray">Minimize to tray</option>
+            <option value="exit">Exit app</option>
+          </select>
         </div>
       </div>
     </aside>

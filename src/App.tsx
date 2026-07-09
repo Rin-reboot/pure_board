@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { CloseActionDialog } from "./components/CloseActionDialog";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
 import { MemoPanel } from "./components/MemoPanel";
@@ -19,6 +20,10 @@ import { TitleBar } from "./components/TitleBar";
 import { WidgetFrame } from "./components/WidgetFrame";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useAutoStart } from "./hooks/useAutoStart";
+import {
+  type CloseAction,
+  useCloseActionPreference,
+} from "./hooks/useCloseActionPreference";
 import { useNetworkUsage } from "./hooks/useNetworkUsage";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
@@ -51,6 +56,8 @@ function App() {
     isLoaded: isAutoStartLoaded,
     toggleAutoStart,
   } = useAutoStart();
+  const { closeActionPreference, setCloseActionPreference } =
+    useCloseActionPreference();
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
@@ -70,6 +77,7 @@ function App() {
   const [pingMs, setPingMs] = useState<number | null>(null);
   const [isMeasuringPing, setIsMeasuringPing] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCloseActionDialogOpen, setIsCloseActionDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
@@ -93,6 +101,36 @@ function App() {
       setIsMeasuringPing(false);
     }
   }, []);
+
+  const runCloseAction = useCallback(async (action: CloseAction) => {
+    try {
+      await invoke(action === "exit" ? "quit_app" : "hide_main_window");
+    } catch (err) {
+      console.error("Failed to run close action:", err);
+    }
+  }, []);
+
+  const handleCloseRequest = useCallback(() => {
+    if (closeActionPreference === "ask") {
+      setIsCloseActionDialogOpen(true);
+      return;
+    }
+
+    void runCloseAction(closeActionPreference);
+  }, [closeActionPreference, runCloseAction]);
+
+  const handleCloseActionSelect = useCallback(
+    async (action: CloseAction, shouldRemember: boolean) => {
+      setIsCloseActionDialogOpen(false);
+
+      if (shouldRemember) {
+        await setCloseActionPreference(action);
+      }
+
+      await runCloseAction(action);
+    },
+    [runCloseAction, setCloseActionPreference],
+  );
 
   const renderWidget = (id: WidgetId) => {
     switch (id) {
@@ -208,14 +246,23 @@ function App() {
         isDragEnabled={!isEditMode}
         isPinned={isPinned}
         isSettingsOpen={isSettingsOpen}
+        onCloseRequest={handleCloseRequest}
         onTogglePin={togglePin}
         onToggleSettings={() => setIsSettingsOpen((prev) => !prev)}
       />
+      {isCloseActionDialogOpen ? (
+        <CloseActionDialog
+          onCancel={() => setIsCloseActionDialogOpen(false)}
+          onSelect={handleCloseActionSelect}
+        />
+      ) : null}
       {isSettingsOpen ? (
         <SettingsPanel
+          closeActionPreference={closeActionPreference}
           isAutoStartEnabled={isAutoStartEnabled}
           isAutoStartLoaded={isAutoStartLoaded}
           updateIntervalMs={updateIntervalMs}
+          onCloseActionPreferenceChange={setCloseActionPreference}
           onToggleAutoStart={toggleAutoStart}
           onUpdateIntervalChange={setUpdateIntervalMs}
         />

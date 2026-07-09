@@ -216,19 +216,27 @@ Implemented behavior:
 
 ## Task Tray
 
-Status: planned
+Status: implemented
 
 Purpose:
 
 * keep the app resident in the system tray
 * allow hiding and restoring the window
 * provide quick access actions
+* allow users to choose whether the close button exits or minimizes to tray
 
 Target platform:
 
 * Windows 11
 
 Linux behavior should not drive the design unless explicitly requested.
+
+Implemented behavior:
+
+* tray menu provides Open and Quit actions
+* left-clicking the tray icon restores the main window
+* the close button can ask every time, exit, or minimize to tray
+* remembered close behavior can be changed from Settings
 
 ---
 

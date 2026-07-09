@@ -1019,6 +1019,27 @@ select:focus-visible {
   border-color: var(--accent-cpu);
 }
 
+.settings-select {
+  flex-shrink: 0;
+  max-width: 132px;
+  background-color: var(--surface-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.settings-select:focus {
+  outline: none;
+  border-color: var(--accent-cpu);
+}
+
+.settings-select option {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
 .settings-switch {
   position: relative;
   flex-shrink: 0;
@@ -1059,4 +1080,81 @@ select:focus-visible {
 .settings-switch-active .settings-switch-thumb {
   background-color: var(--accent-cpu);
   transform: translateX(20px);
+}
+
+/* ============================================================
+   Close action dialog
+   ============================================================ */
+.dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.close-action-dialog {
+  width: min(320px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.close-action-dialog-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.close-action-dialog h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.close-action-dialog p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.close-action-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.close-action-remember input {
+  accent-color: var(--accent-cpu);
+}
+
+.close-action-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.close-action-dialog-actions button {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 7px 10px;
+  background-color: var(--surface-input);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.close-action-dialog-actions button:hover {
+  background-color: var(--hover-overlay);
 }
