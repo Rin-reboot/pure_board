@@ -132,6 +132,17 @@ fn bytes_to_mbps(bytes: u64, elapsed: Duration) -> f64 {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
+        .setup(|app| {
+            #[cfg(desktop)]
+            {
+                app.handle().plugin(tauri_plugin_autostart::init(
+                    tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                    None,
+                ))?;
+            }
+
+            Ok(())
+        })
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
             networks: Mutex::new(Networks::new_with_refreshed_list()),

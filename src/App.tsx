@@ -18,6 +18,7 @@ import { SystemHistoryView } from "./components/SystemHistoryView";
 import { TitleBar } from "./components/TitleBar";
 import { WidgetFrame } from "./components/WidgetFrame";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
+import { useAutoStart } from "./hooks/useAutoStart";
 import { useNetworkUsage } from "./hooks/useNetworkUsage";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
@@ -45,6 +46,11 @@ interface DragState {
 function App() {
   const { theme, toggleTheme } = useTheme();
   const { isPinned, togglePin } = useAlwaysOnTop();
+  const {
+    isAutoStartEnabled,
+    isLoaded: isAutoStartLoaded,
+    toggleAutoStart,
+  } = useAutoStart();
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
@@ -207,7 +213,10 @@ function App() {
       />
       {isSettingsOpen ? (
         <SettingsPanel
+          isAutoStartEnabled={isAutoStartEnabled}
+          isAutoStartLoaded={isAutoStartLoaded}
           updateIntervalMs={updateIntervalMs}
+          onToggleAutoStart={toggleAutoStart}
           onUpdateIntervalChange={setUpdateIntervalMs}
         />
       ) : null}

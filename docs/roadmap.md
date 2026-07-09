@@ -234,7 +234,7 @@ Linux behavior should not drive the design unless explicitly requested.
 
 ## Auto Start
 
-Status: planned
+Status: implemented
 
 Purpose:
 
@@ -244,7 +244,7 @@ Target platform:
 
 * Windows 11
 
-Implementation should use native or Tauri-supported mechanisms when possible.
+Implemented using Tauri's autostart plugin.
 
 ---
 

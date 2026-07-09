@@ -22,3 +22,6 @@ tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 sysinfo = "0.39.5"
 tauri-plugin-store = "2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-autostart = "2.5.1"

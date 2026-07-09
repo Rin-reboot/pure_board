@@ -1018,3 +1018,45 @@ select:focus-visible {
   outline: none;
   border-color: var(--accent-cpu);
 }
+
+.settings-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface-input);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.settings-switch:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.settings-switch-active {
+  border-color: rgba(74, 158, 255, 0.46);
+  background-color: rgba(74, 158, 255, 0.28);
+}
+
+.settings-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--text-secondary);
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.settings-switch-active .settings-switch-thumb {
+  background-color: var(--accent-cpu);
+  transform: translateX(20px);
+}

@@ -1,12 +1,18 @@
 import { MIN_UPDATE_INTERVAL_MS } from "../hooks/useUpdateIntervalSetting";
 
 interface SettingsPanelProps {
+  isAutoStartEnabled: boolean;
+  isAutoStartLoaded: boolean;
   updateIntervalMs: number;
+  onToggleAutoStart: () => void;
   onUpdateIntervalChange: (valueMs: number) => void;
 }
 
 export function SettingsPanel({
+  isAutoStartEnabled,
+  isAutoStartLoaded,
   updateIntervalMs,
+  onToggleAutoStart,
   onUpdateIntervalChange,
 }: SettingsPanelProps) {
   const updateIntervalSeconds = updateIntervalMs / 1000;
@@ -38,6 +44,33 @@ export function SettingsPanel({
             }
             aria-label="Update interval"
           />
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <span className="settings-section-title">Application</span>
+        <div className="settings-row">
+          <div className="settings-row-copy">
+            <span className="settings-row-label">Launch at startup</span>
+            <span className="settings-row-value">
+              Start pure_board when you sign in
+            </span>
+          </div>
+          <button
+            type="button"
+            className={[
+              "settings-switch",
+              isAutoStartEnabled ? "settings-switch-active" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-label="Launch at startup"
+            aria-pressed={isAutoStartEnabled}
+            disabled={!isAutoStartLoaded}
+            onClick={onToggleAutoStart}
+          >
+            <span className="settings-switch-thumb" />
+          </button>
         </div>
       </div>
     </aside>
