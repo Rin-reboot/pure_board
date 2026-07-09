@@ -657,6 +657,103 @@ body,
 }
 
 /* ============================================================
+   Shortcuts view
+   ============================================================ */
+.shortcuts-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 320px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.shortcuts-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shortcuts-view-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.shortcuts-empty {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.shortcut-button {
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background-color: var(--surface-input);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.shortcut-button:hover:not(:disabled) {
+  background-color: var(--hover-overlay);
+}
+
+.shortcut-button:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.shortcut-button-error {
+  border-color: rgba(252, 165, 165, 0.55);
+}
+
+.shortcut-button-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent-network);
+}
+
+.shortcut-button-label {
+  max-width: 100%;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.shortcut-button-status {
+  font-size: 0.7rem;
+  color: #fca5a5;
+}
+
+.shortcut-button-spinner {
+  animation: network-ping-spin 0.8s linear infinite;
+}
+
+/* ============================================================
    Memo card
    ============================================================ */
 .memo-card {
@@ -1053,11 +1150,15 @@ select:focus-visible {
   top: 58px;
   right: 14px;
   z-index: 3;
-  width: min(280px, calc(100% - 28px));
+  width: min(332px, calc(100% - 28px));
+  max-height: calc(100vh - 92px);
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   background-color: var(--bg-card);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -1159,6 +1260,54 @@ select:focus-visible {
 .settings-select option {
   background-color: #111827;
   color: #f9fafb;
+}
+
+.shortcut-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shortcut-settings-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.shortcut-settings-header,
+.shortcut-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shortcut-settings-header {
+  justify-content: space-between;
+}
+
+.shortcut-settings-input {
+  width: 100%;
+}
+
+.shortcut-settings-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-settings-remove {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.shortcut-settings-remove:hover {
+  color: #fca5a5;
 }
 
 .settings-switch {

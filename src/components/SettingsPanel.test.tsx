@@ -12,9 +12,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -24,6 +26,7 @@ describe("SettingsPanel", () => {
     expect(getByText("Settings")).toBeTruthy();
     expect(getByText("System")).toBeTruthy();
     expect(getByText("Network")).toBeTruthy();
+    expect(getByText("Shortcuts")).toBeTruthy();
     expect(getByText("Application")).toBeTruthy();
     expect(getByText("Update interval")).toBeTruthy();
     expect(getByText("Ping target")).toBeTruthy();
@@ -45,9 +48,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={onUpdateIntervalChange}
       />,
@@ -68,9 +73,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={onPingTargetHostChange}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -83,6 +90,33 @@ describe("SettingsPanel", () => {
     expect(onPingTargetHostChange).toHaveBeenCalledWith("example.com");
   });
 
+  it("calls the shortcut buttons change handler", () => {
+    const onShortcutButtonsChange = vi.fn();
+    const { getByLabelText } = render(
+      <SettingsPanel
+        closeActionPreference="ask"
+        isAutoStartEnabled={false}
+        isAutoStartLoaded={true}
+        pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
+        updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
+        onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={onShortcutButtonsChange}
+        onToggleAutoStart={vi.fn()}
+        onUpdateIntervalChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(getByLabelText("Shortcut 1 label"), {
+      target: { value: "Docs" },
+    });
+
+    expect(onShortcutButtonsChange).toHaveBeenCalledWith([
+      expect.objectContaining({ label: "Docs", actionType: "url" }),
+    ]);
+  });
+
   it("calls the auto-start toggle handler", () => {
     const onToggleAutoStart = vi.fn();
     const { getByLabelText } = render(
@@ -91,9 +125,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={onToggleAutoStart}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -111,9 +147,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={false}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -133,9 +171,11 @@ describe("SettingsPanel", () => {
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={onCloseActionPreferenceChange}
         onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,

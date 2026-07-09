@@ -18,9 +18,11 @@ describe("Footer", () => {
       <Footer
         isHistoryOpen={false}
         isEditMode={false}
+        isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={vi.fn()}
         onToggleEditMode={vi.fn()}
+        onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
       />,
     );
@@ -41,9 +43,11 @@ describe("Footer", () => {
       <Footer
         isHistoryOpen={false}
         isEditMode={false}
+        isShortcutsOpen={false}
         theme="light"
         onToggleHistory={vi.fn()}
         onToggleEditMode={vi.fn()}
+        onToggleShortcuts={vi.fn()}
         onToggleTheme={onToggleTheme}
       />,
     );
@@ -59,9 +63,11 @@ describe("Footer", () => {
       <Footer
         isHistoryOpen={false}
         isEditMode={false}
+        isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={vi.fn()}
         onToggleEditMode={onToggleEditMode}
+        onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
       />,
     );
@@ -77,9 +83,11 @@ describe("Footer", () => {
       <Footer
         isHistoryOpen={false}
         isEditMode={false}
+        isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={onToggleHistory}
         onToggleEditMode={vi.fn()}
+        onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
       />,
     );
@@ -87,5 +95,25 @@ describe("Footer", () => {
     fireEvent.click(getByLabelText("Graph"));
 
     expect(onToggleHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the shortcuts toggle handler", () => {
+    const onToggleShortcuts = vi.fn();
+    const { getByLabelText } = render(
+      <Footer
+        isHistoryOpen={false}
+        isEditMode={false}
+        isShortcutsOpen={false}
+        theme="dark"
+        onToggleHistory={vi.fn()}
+        onToggleEditMode={vi.fn()}
+        onToggleShortcuts={onToggleShortcuts}
+        onToggleTheme={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(getByLabelText("Shortcuts"));
+
+    expect(onToggleShortcuts).toHaveBeenCalledTimes(1);
   });
 });

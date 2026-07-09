@@ -1,6 +1,7 @@
 use serde::Serialize;
 use std::{
     cmp::Reverse,
+    path::Path,
     process::Command,
     sync::Mutex,
     time::{Duration, Instant},
@@ -46,6 +47,20 @@ struct PingTarget {
 #[derive(Serialize)]
 struct PingResult {
     latency_ms: u64,
+}
+
+#[derive(serde::Deserialize)]
+struct ShortcutAction {
+    action_type: ShortcutActionType,
+    target: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum ShortcutActionType {
+    Url,
+    File,
+    App,
 }
 
 struct AppState {
@@ -354,6 +369,64 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
+#[tauri::command]
+fn run_shortcut_action(action: ShortcutAction) -> Result<(), String> {
+    let target = action.target.trim();
+    if target.is_empty() {
+        return Err("Shortcut target is empty".to_string());
+    }
+
+    match action.action_type {
+        ShortcutActionType::Url => {
+            if !target.starts_with("https://") && !target.starts_with("http://") {
+                return Err("Shortcut URL must start with http:// or https://".to_string());
+            }
+
+            open_with_default_app(target)
+        }
+        ShortcutActionType::File => {
+            if !Path::new(target).exists() {
+                return Err("Shortcut file target does not exist".to_string());
+            }
+
+            open_with_default_app(target)
+        }
+        ShortcutActionType::App => {
+            if !Path::new(target).exists() {
+                return Err("Shortcut app target does not exist".to_string());
+            }
+
+            Command::new(target)
+                .spawn()
+                .map(|_| ())
+                .map_err(|err| format!("Failed to launch shortcut app: {err}"))
+        }
+    }
+}
+
+fn open_with_default_app(target: &str) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    let result = Command::new("rundll32")
+        .args(["url.dll,FileProtocolHandler", target])
+        .spawn();
+
+    #[cfg(target_os = "macos")]
+    let result = Command::new("open").arg(target).spawn();
+
+    #[cfg(target_os = "linux")]
+    let result = Command::new("xdg-open").arg(target).spawn();
+
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    let result = Err(std::io::Error::new(
+        std::io::ErrorKind::Unsupported,
+        "opening shortcuts is not supported on this platform",
+    ));
+
+    result
+        .map(|_| ())
+        .map_err(|err| format!("Failed to open shortcut target: {err}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -381,7 +454,8 @@ pub fn run() {
             measure_ping,
             show_main_window,
             hide_main_window,
-            quit_app
+            quit_app,
+            run_shortcut_action
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

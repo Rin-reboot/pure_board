@@ -5,9 +5,11 @@ import type { Theme } from "../hooks/useTheme";
 interface FooterProps {
   isHistoryOpen: boolean;
   isEditMode: boolean;
+  isShortcutsOpen: boolean;
   theme: Theme;
   onToggleHistory: () => void;
   onToggleEditMode: () => void;
+  onToggleShortcuts: () => void;
   onToggleTheme: () => void;
 }
 
@@ -21,9 +23,11 @@ function formatDateTime(date: Date): string {
 export function Footer({
   isHistoryOpen,
   isEditMode,
+  isShortcutsOpen,
   theme,
   onToggleHistory,
   onToggleEditMode,
+  onToggleShortcuts,
   onToggleTheme,
 }: FooterProps) {
   const [now, setNow] = useState(new Date());
@@ -45,7 +49,13 @@ export function Footer({
         >
           <Pencil size={14} />
         </button>
-        <button type="button" aria-label="List">
+        <button
+          type="button"
+          aria-label="Shortcuts"
+          aria-pressed={isShortcutsOpen}
+          className={isShortcutsOpen ? "is-active" : ""}
+          onClick={onToggleShortcuts}
+        >
           <ClipboardList size={14} />
         </button>
         <button

@@ -49,6 +49,7 @@ The following features are already implemented:
 * widget edit mode
 * widget drag reordering
 * widget visibility toggle
+* shortcut button view
 * close button
 
 ---
@@ -254,6 +255,32 @@ Target platform:
 * Windows 11
 
 Implemented using Tauri's autostart plugin.
+
+---
+
+## Shortcut Buttons
+
+Status: implemented
+
+Purpose:
+
+* provide quick access buttons for common actions
+* keep shortcut execution local to the desktop app
+* avoid exposing arbitrary shell command execution
+
+Implemented behavior:
+
+* the footer shortcuts button toggles a shortcuts-only view
+* users can configure up to six shortcuts from Settings
+* supported shortcut types are URL, file / folder, and app
+* shortcut definitions are persisted in the settings store
+* shortcut execution is routed through a focused Rust command
+
+Out of scope:
+
+* arbitrary shell command shortcuts
+* shortcut arguments
+* plugin-style shortcut extensions
 
 ---
 

@@ -15,6 +15,7 @@ import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { ShortcutPanel } from "./components/ShortcutPanel";
 import { SystemHistoryView } from "./components/SystemHistoryView";
 import { TitleBar } from "./components/TitleBar";
 import { WidgetFrame } from "./components/WidgetFrame";
@@ -26,6 +27,7 @@ import {
 } from "./hooks/useCloseActionPreference";
 import { useNetworkUsage } from "./hooks/useNetworkUsage";
 import { usePingTargetSetting } from "./hooks/usePingTargetSetting";
+import { useShortcutButtons } from "./hooks/useShortcutButtons";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
 import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
@@ -59,6 +61,11 @@ function App() {
   const { closeActionPreference, setCloseActionPreference } =
     useCloseActionPreference();
   const { pingTargetHost, setPingTargetHost } = usePingTargetSetting();
+  const {
+    shortcutButtons,
+    isLoaded: areShortcutButtonsLoaded,
+    setShortcutButtons,
+  } = useShortcutButtons();
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
@@ -82,9 +89,14 @@ function App() {
   const [isCloseActionDialogOpen, setIsCloseActionDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const stackRef = useRef<HTMLDivElement | null>(null);
   const draggingWidgetId = dragState?.id ?? null;
+  const runnableShortcuts = useMemo(
+    () => shortcutButtons.filter((shortcut) => shortcut.target.trim()),
+    [shortcutButtons],
+  );
 
   const handleMeasurePing = useCallback(async () => {
     setIsMeasuringPing(true);
@@ -143,6 +155,16 @@ function App() {
     },
     [runCloseAction, setCloseActionPreference],
   );
+
+  const handleToggleHistory = useCallback(() => {
+    setIsShortcutsOpen(false);
+    setIsHistoryOpen((prev) => !prev);
+  }, []);
+
+  const handleToggleShortcuts = useCallback(() => {
+    setIsHistoryOpen(false);
+    setIsShortcutsOpen((prev) => !prev);
+  }, []);
 
   const renderWidget = (id: WidgetId) => {
     switch (id) {
@@ -277,9 +299,11 @@ function App() {
           isAutoStartEnabled={isAutoStartEnabled}
           isAutoStartLoaded={isAutoStartLoaded}
           pingTargetHost={pingTargetHost}
+          shortcutButtons={shortcutButtons}
           updateIntervalMs={updateIntervalMs}
           onCloseActionPreferenceChange={setCloseActionPreference}
           onPingTargetHostChange={handlePingTargetHostChange}
+          onShortcutButtonsChange={setShortcutButtons}
           onToggleAutoStart={toggleAutoStart}
           onUpdateIntervalChange={setUpdateIntervalMs}
         />
@@ -294,38 +318,46 @@ function App() {
         onPointerUp={handleWidgetDragEnd}
         onPointerCancel={handleWidgetDragEnd}
       >
-        {isHistoryOpen ? (
+        {isShortcutsOpen ? (
+          <ShortcutPanel
+            shortcuts={runnableShortcuts}
+            isLoaded={areShortcutButtonsLoaded}
+          />
+        ) : isHistoryOpen ? (
           <SystemHistoryView
             cpuHistory={cpuHistory}
             ramHistory={ramHistory}
             updateIntervalMs={updateIntervalMs}
           />
-        ) : null}
-        {layout
-          .filter((widget) => isEditMode || widget.visible)
-          .map((widget) => (
-            <WidgetFrame
-              key={widget.id}
-              id={widget.id}
-              title={getWidgetTitle(widget.id)}
-              isEditMode={isEditMode}
-              isDragging={dragState?.id === widget.id}
-              isVisible={widget.visible}
-              dragStyle={getDragStyle(widget.id)}
-              onToggleVisibility={toggleWidgetVisibility}
-              onDragStart={handleWidgetDragStart}
-            >
-              {renderWidget(widget.id)}
-            </WidgetFrame>
-          ))}
+        ) : (
+          layout
+            .filter((widget) => isEditMode || widget.visible)
+            .map((widget) => (
+              <WidgetFrame
+                key={widget.id}
+                id={widget.id}
+                title={getWidgetTitle(widget.id)}
+                isEditMode={isEditMode}
+                isDragging={dragState?.id === widget.id}
+                isVisible={widget.visible}
+                dragStyle={getDragStyle(widget.id)}
+                onToggleVisibility={toggleWidgetVisibility}
+                onDragStart={handleWidgetDragStart}
+              >
+                {renderWidget(widget.id)}
+              </WidgetFrame>
+            ))
+        )}
       </div>
 
       <Footer
         isHistoryOpen={isHistoryOpen}
         isEditMode={isEditMode}
+        isShortcutsOpen={isShortcutsOpen}
         theme={theme}
-        onToggleHistory={() => setIsHistoryOpen((prev) => !prev)}
+        onToggleHistory={handleToggleHistory}
         onToggleEditMode={() => setIsEditMode((prev) => !prev)}
+        onToggleShortcuts={handleToggleShortcuts}
         onToggleTheme={toggleTheme}
       />
     </main>

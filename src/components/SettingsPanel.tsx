@@ -1,4 +1,11 @@
 import type { CloseActionPreference } from "../hooks/useCloseActionPreference";
+import {
+  createShortcutButton,
+  MAX_SHORTCUT_BUTTONS,
+  type ShortcutActionType,
+  type ShortcutButton,
+  type ShortcutIcon,
+} from "../hooks/useShortcutButtons";
 import { MIN_UPDATE_INTERVAL_MS } from "../hooks/useUpdateIntervalSetting";
 
 interface SettingsPanelProps {
@@ -6,9 +13,11 @@ interface SettingsPanelProps {
   isAutoStartEnabled: boolean;
   isAutoStartLoaded: boolean;
   pingTargetHost: string;
+  shortcutButtons: readonly ShortcutButton[];
   updateIntervalMs: number;
   onCloseActionPreferenceChange: (value: CloseActionPreference) => void;
   onPingTargetHostChange: (value: string) => void;
+  onShortcutButtonsChange: (value: readonly ShortcutButton[]) => void;
   onToggleAutoStart: () => void;
   onUpdateIntervalChange: (valueMs: number) => void;
 }
@@ -18,14 +27,44 @@ export function SettingsPanel({
   isAutoStartEnabled,
   isAutoStartLoaded,
   pingTargetHost,
+  shortcutButtons,
   updateIntervalMs,
   onCloseActionPreferenceChange,
   onPingTargetHostChange,
+  onShortcutButtonsChange,
   onToggleAutoStart,
   onUpdateIntervalChange,
 }: SettingsPanelProps) {
   const updateIntervalSeconds = updateIntervalMs / 1000;
   const minUpdateIntervalSeconds = MIN_UPDATE_INTERVAL_MS / 1000;
+  const shortcutSlots = Array.from(
+    { length: MAX_SHORTCUT_BUTTONS },
+    (_, index) => shortcutButtons[index] ?? null,
+  );
+
+  const updateShortcut = (
+    index: number,
+    patch: Partial<Omit<ShortcutButton, "id">>,
+  ) => {
+    const next = [...shortcutButtons];
+    const current = next[index] ?? createShortcutButton(index);
+    const actionType = patch.actionType ?? current.actionType;
+
+    next[index] = {
+      ...current,
+      ...patch,
+      actionType,
+      icon: patch.icon ?? current.icon,
+    };
+
+    onShortcutButtonsChange(next);
+  };
+
+  const removeShortcut = (index: number) => {
+    onShortcutButtonsChange(
+      shortcutButtons.filter((_, itemIndex) => itemIndex !== index),
+    );
+  };
 
   return (
     <aside className="settings-panel" aria-label="Settings">
@@ -72,6 +111,82 @@ export function SettingsPanel({
             onChange={(event) => onPingTargetHostChange(event.target.value)}
             aria-label="Ping target"
           />
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <span className="settings-section-title">Shortcuts</span>
+        <div className="shortcut-settings-list">
+          {shortcutSlots.map((shortcut, index) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: slots are fixed settings positions
+              key={index}
+              className="shortcut-settings-item"
+            >
+              <div className="shortcut-settings-header">
+                <span className="settings-row-label">Slot {index + 1}</span>
+                {shortcut ? (
+                  <button
+                    type="button"
+                    className="shortcut-settings-remove"
+                    onClick={() => removeShortcut(index)}
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              <input
+                className="settings-text-input shortcut-settings-input"
+                type="text"
+                value={shortcut?.label ?? ""}
+                placeholder="Label"
+                onChange={(event) =>
+                  updateShortcut(index, { label: event.target.value })
+                }
+                aria-label={`Shortcut ${index + 1} label`}
+              />
+              <div className="shortcut-settings-row">
+                <select
+                  className="settings-select shortcut-settings-select"
+                  value={shortcut?.actionType ?? "url"}
+                  onChange={(event) =>
+                    updateShortcut(index, {
+                      actionType: event.target.value as ShortcutActionType,
+                    })
+                  }
+                  aria-label={`Shortcut ${index + 1} type`}
+                >
+                  <option value="url">URL</option>
+                  <option value="file">File</option>
+                  <option value="app">App</option>
+                </select>
+                <select
+                  className="settings-select shortcut-settings-select"
+                  value={shortcut?.icon ?? "globe"}
+                  onChange={(event) =>
+                    updateShortcut(index, {
+                      icon: event.target.value as ShortcutIcon,
+                    })
+                  }
+                  aria-label={`Shortcut ${index + 1} icon`}
+                >
+                  <option value="globe">Globe</option>
+                  <option value="folder">Folder</option>
+                  <option value="app">App</option>
+                </select>
+              </div>
+              <input
+                className="settings-text-input shortcut-settings-input"
+                type="text"
+                value={shortcut?.target ?? ""}
+                placeholder="Target"
+                onChange={(event) =>
+                  updateShortcut(index, { target: event.target.value })
+                }
+                aria-label={`Shortcut ${index + 1} target`}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
