@@ -659,6 +659,12 @@ body,
 /* ============================================================
    Shortcuts view
    ============================================================ */
+.shortcuts-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .shortcuts-view {
   display: flex;
   flex-direction: column;
@@ -684,9 +690,47 @@ body,
   color: var(--text-primary);
 }
 
+.shortcuts-help-card {
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.shortcuts-help-title {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.shortcuts-help-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shortcuts-help-label {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--accent-network);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.shortcuts-help-grid p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
 .shortcuts-empty {
   display: grid;
-  min-height: 220px;
+  min-height: 160px;
   place-items: center;
   margin: 0;
   color: var(--text-secondary);
