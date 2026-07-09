@@ -154,6 +154,11 @@ body,
   gap: 14px;
 }
 
+.card-stack-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .card-stack::-webkit-scrollbar {
   width: 6px;
 }
@@ -174,6 +179,10 @@ body,
   min-width: 0;
 }
 
+.widget-frame-slot {
+  min-width: 0;
+}
+
 .widget-frame-editing {
   padding: 8px;
   border: 1px dashed var(--border-subtle);
@@ -181,14 +190,23 @@ body,
   background-color: rgba(255, 255, 255, 0.03);
   transition:
     border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
     opacity 0.15s ease,
     transform 0.15s ease;
 }
 
 .widget-frame-dragging {
+  position: fixed;
+  z-index: 10;
   border-color: var(--accent-cpu);
-  transform: scale(0.99);
-  opacity: 0.82;
+  background-color: rgba(74, 158, 255, 0.08);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(74, 158, 255, 0.16);
+  transform: scale(1.01);
+  opacity: 0.96;
+  pointer-events: none;
 }
 
 .widget-frame-hidden {
@@ -232,10 +250,26 @@ body,
   cursor: grabbing;
 }
 
+.widget-frame-dragging .widget-drag-handle {
+  background-color: var(--hover-overlay);
+  color: var(--accent-cpu);
+  cursor: grabbing;
+}
+
 .widget-drag-handle:hover,
 .widget-visibility-toggle:hover {
   background-color: var(--hover-overlay);
   color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-frame-editing {
+    transition: none;
+  }
+
+  .widget-frame-dragging {
+    transform: none;
+  }
 }
 
 /* ============================================================

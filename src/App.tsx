@@ -1,6 +1,7 @@
 import "./App.css";
 import { invoke } from "@tauri-apps/api/core";
 import {
+  type CSSProperties,
   type PointerEvent,
   useCallback,
   useMemo,
@@ -32,6 +33,15 @@ interface PingResult {
   latency_ms: number;
 }
 
+interface DragState {
+  id: WidgetId;
+  height: number;
+  left: number;
+  pointerOffsetY: number;
+  top: number;
+  width: number;
+}
+
 function App() {
   const { theme, toggleTheme } = useTheme();
   const { isPinned, togglePin } = useAlwaysOnTop();
@@ -56,10 +66,9 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [draggingWidgetId, setDraggingWidgetId] = useState<WidgetId | null>(
-    null,
-  );
+  const [dragState, setDragState] = useState<DragState | null>(null);
   const stackRef = useRef<HTMLDivElement | null>(null);
+  const draggingWidgetId = dragState?.id ?? null;
 
   const handleMeasurePing = useCallback(async () => {
     setIsMeasuringPing(true);
@@ -129,13 +138,30 @@ function App() {
     id: WidgetId,
     event: PointerEvent<HTMLButtonElement>,
   ) => {
+    const frame = event.currentTarget.closest<HTMLElement>("[data-widget-id]");
+    if (!frame) return;
+
+    const rect = frame.getBoundingClientRect();
+
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDraggingWidgetId(id);
+    setDragState({
+      id,
+      height: rect.height,
+      left: rect.left,
+      pointerOffsetY: event.clientY - rect.top,
+      top: rect.top,
+      width: rect.width,
+    });
   };
 
   const handleWidgetDragMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (!draggingWidgetId || !stackRef.current) return;
+    if (!dragState || !stackRef.current) return;
+
+    const nextTop = event.clientY - dragState.pointerOffsetY;
+    setDragState((current) =>
+      current ? { ...current, top: nextTop } : current,
+    );
 
     const frames = Array.from(
       stackRef.current.querySelectorAll<HTMLElement>("[data-widget-id]"),
@@ -143,20 +169,31 @@ function App() {
 
     for (const frame of frames) {
       const targetId = frame.dataset.widgetId as WidgetId | undefined;
-      if (!targetId || targetId === draggingWidgetId) continue;
+      if (!targetId || targetId === dragState.id) continue;
 
       const rect = frame.getBoundingClientRect();
       if (event.clientY < rect.top || event.clientY > rect.bottom) continue;
 
       const placement =
         event.clientY < rect.top + rect.height / 2 ? "before" : "after";
-      moveWidget(draggingWidgetId, targetId, placement);
+      moveWidget(dragState.id, targetId, placement);
       return;
     }
   };
 
   const handleWidgetDragEnd = () => {
-    setDraggingWidgetId(null);
+    setDragState(null);
+  };
+
+  const getDragStyle = (id: WidgetId): CSSProperties | undefined => {
+    if (dragState?.id !== id) return undefined;
+
+    return {
+      height: dragState.height,
+      left: dragState.left,
+      top: dragState.top,
+      width: dragState.width,
+    };
   };
 
   return (
@@ -176,7 +213,9 @@ function App() {
       ) : null}
 
       <div
-        className="card-stack"
+        className={["card-stack", draggingWidgetId ? "card-stack-dragging" : ""]
+          .filter(Boolean)
+          .join(" ")}
         ref={stackRef}
         onPointerMove={handleWidgetDragMove}
         onPointerUp={handleWidgetDragEnd}
@@ -197,8 +236,9 @@ function App() {
               id={widget.id}
               title={getWidgetTitle(widget.id)}
               isEditMode={isEditMode}
-              isDragging={draggingWidgetId === widget.id}
+              isDragging={dragState?.id === widget.id}
               isVisible={widget.visible}
+              dragStyle={getDragStyle(widget.id)}
               onToggleVisibility={toggleWidgetVisibility}
               onDragStart={handleWidgetDragStart}
             >
