@@ -140,6 +140,7 @@ function App() {
             usage={usage?.cpu_usage ?? 0}
             processorName={usage?.cpu_name ?? "Unknown CPU"}
             history={cpuCardHistory}
+            topProcesses={usage?.top_cpu_processes ?? []}
           />
         );
       case "ram":
@@ -147,6 +148,7 @@ function App() {
           <RamCard
             usedBytes={usage?.mem_used ?? 0}
             totalBytes={usage?.mem_total ?? 1}
+            topProcesses={usage?.top_memory_processes ?? []}
           />
         );
       case "network":

@@ -1,10 +1,11 @@
 use serde::Serialize;
 use std::{
+    cmp::Reverse,
     net::{TcpStream, ToSocketAddrs},
     sync::Mutex,
     time::{Duration, Instant},
 };
-use sysinfo::{Networks, System};
+use sysinfo::{Networks, ProcessesToUpdate, System};
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -16,11 +17,21 @@ use tauri::{
 struct SystemUsage {
     cpu_usage: f32, // 全体CPU使用率(%)
     cpu_name: String,
+    top_cpu_processes: Vec<ProcessUsage>,
+    top_memory_processes: Vec<ProcessUsage>,
     mem_used: u64,  // 使用中メモリ(バイト)
     mem_total: u64, // 総メモリ(バイト)
 }
 
 // アプリ全体で共有する状態。Mutexで包むことで複数スレッドから安全に書き換えられる
+#[derive(Clone, Serialize)]
+struct ProcessUsage {
+    pid: String,
+    name: String,
+    cpu_usage: f32,
+    memory_bytes: u64,
+}
+
 #[derive(Serialize)]
 struct NetworkUsage {
     download_mbps: f64,
@@ -51,6 +62,7 @@ fn get_system_usage(state: tauri::State<AppState>) -> SystemUsage {
 
     sys.refresh_cpu_all();
     sys.refresh_memory();
+    sys.refresh_processes(ProcessesToUpdate::All, true);
 
     let cpus = sys.cpus();
     let cpu_usage = if cpus.is_empty() {
@@ -58,16 +70,40 @@ fn get_system_usage(state: tauri::State<AppState>) -> SystemUsage {
     } else {
         cpus.iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / cpus.len() as f32
     };
+    let process_cpu_scale = if cpus.is_empty() {
+        1.0
+    } else {
+        cpus.len() as f32
+    };
     let cpu_name = cpus
         .first()
         .map(|cpu| cpu.brand().trim())
         .filter(|brand| !brand.is_empty())
         .unwrap_or("Unknown CPU")
         .to_string();
+    let processes = sys
+        .processes()
+        .iter()
+        .map(|(pid, process)| ProcessUsage {
+            pid: pid.to_string(),
+            name: process.name().to_string_lossy().into_owned(),
+            cpu_usage: process.cpu_usage() / process_cpu_scale,
+            memory_bytes: process.memory(),
+        })
+        .collect::<Vec<_>>();
+    let mut top_cpu_processes = processes.clone();
+    top_cpu_processes.sort_by(|a, b| b.cpu_usage.total_cmp(&a.cpu_usage));
+    top_cpu_processes.truncate(3);
+
+    let mut top_memory_processes = processes;
+    top_memory_processes.sort_by_key(|process| Reverse(process.memory_bytes));
+    top_memory_processes.truncate(3);
 
     SystemUsage {
         cpu_usage,
         cpu_name,
+        top_cpu_processes,
+        top_memory_processes,
         mem_used: sys.used_memory(),
         mem_total: sys.total_memory(),
     }
