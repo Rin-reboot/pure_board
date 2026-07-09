@@ -11,6 +11,7 @@ describe("NetworkStats", () => {
         downloadMbps={12.4}
         uploadMbps={2.8}
         pingMs={8}
+        pingErrorMessage={null}
         pingTargetLabel="Google DNS"
         isMeasuringPing={false}
         onMeasurePing={vi.fn()}
@@ -34,6 +35,7 @@ describe("NetworkStats", () => {
         downloadMbps={0}
         uploadMbps={0}
         pingMs={null}
+        pingErrorMessage={null}
         pingTargetLabel="Google DNS"
         isMeasuringPing={false}
         onMeasurePing={vi.fn()}
@@ -43,6 +45,39 @@ describe("NetworkStats", () => {
     expect(getByText("--")).toBeTruthy();
   });
 
+  it("renders a loading indicator while ping is running", () => {
+    const { getByTitle } = render(
+      <NetworkStats
+        downloadMbps={0}
+        uploadMbps={0}
+        pingMs={null}
+        pingErrorMessage={null}
+        pingTargetLabel="Google DNS"
+        isMeasuringPing={true}
+        onMeasurePing={vi.fn()}
+      />,
+    );
+
+    expect(getByTitle("Measuring ping")).toBeTruthy();
+  });
+
+  it("renders an error value when ping fails", () => {
+    const { getByText, getByTitle } = render(
+      <NetworkStats
+        downloadMbps={0}
+        uploadMbps={0}
+        pingMs={null}
+        pingErrorMessage="Ping command failed"
+        pingTargetLabel="Google DNS"
+        isMeasuringPing={false}
+        onMeasurePing={vi.fn()}
+      />,
+    );
+
+    expect(getByText("失敗")).toBeTruthy();
+    expect(getByTitle("Ping failed: Ping command failed")).toBeTruthy();
+  });
+
   it("calls the manual ping handler from the ping button", () => {
     const onMeasurePing = vi.fn();
     const { getByLabelText } = render(
@@ -50,6 +85,7 @@ describe("NetworkStats", () => {
         downloadMbps={0}
         uploadMbps={0}
         pingMs={null}
+        pingErrorMessage={null}
         pingTargetLabel="Google DNS"
         isMeasuringPing={false}
         onMeasurePing={onMeasurePing}

@@ -597,6 +597,31 @@ body,
   font-variant-numeric: tabular-nums;
 }
 
+.network-value-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+}
+
+.network-value-error {
+  font-size: 0.9rem;
+}
+
+.network-ping-spinner {
+  animation: network-ping-spin 0.8s linear infinite;
+}
+
+@keyframes network-ping-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .network-value small {
   font-size: 0.65rem;
   font-weight: 500;
@@ -1091,7 +1116,8 @@ select:focus-visible {
   color: var(--text-secondary);
 }
 
-.settings-number-input {
+.settings-number-input,
+.settings-text-input {
   flex-shrink: 0;
   width: 82px;
   background-color: var(--surface-input);
@@ -1103,7 +1129,13 @@ select:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
-.settings-number-input:focus {
+.settings-text-input {
+  width: 128px;
+  font-variant-numeric: normal;
+}
+
+.settings-number-input:focus,
+.settings-text-input:focus {
   outline: none;
   border-color: var(--accent-cpu);
 }

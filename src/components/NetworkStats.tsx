@@ -4,6 +4,7 @@ interface NetworkStatsProps {
   downloadMbps: number;
   uploadMbps: number;
   pingMs: number | null;
+  pingErrorMessage: string | null;
   pingTargetLabel: string;
   isMeasuringPing: boolean;
   onMeasurePing: () => void;
@@ -13,6 +14,7 @@ export function NetworkStats({
   downloadMbps,
   uploadMbps,
   pingMs,
+  pingErrorMessage,
   pingTargetLabel,
   isMeasuringPing,
   onMeasurePing,
@@ -20,6 +22,11 @@ export function NetworkStats({
   const formattedDownload = formatMbps(downloadMbps);
   const formattedUpload = formatMbps(uploadMbps);
   const formattedPing = pingMs === null ? "--" : Math.round(pingMs).toString();
+  const pingStatusLabel = isMeasuringPing
+    ? "Measuring ping"
+    : pingErrorMessage
+      ? `Ping failed: ${pingErrorMessage}`
+      : undefined;
 
   return (
     <section className="card network-card">
@@ -60,10 +67,31 @@ export function NetworkStats({
         </button>
         <span className="network-label">Ping</span>
         <span
-          className="network-value"
-          style={{ color: "var(--accent-network)" }}
+          className={[
+            "network-value",
+            isMeasuringPing ? "network-value-loading" : "",
+            pingErrorMessage ? "network-value-error" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={{
+            color: pingErrorMessage ? "#fca5a5" : "var(--accent-network)",
+          }}
+          title={pingStatusLabel}
         >
-          {formattedPing} <small>ms</small>
+          {isMeasuringPing ? (
+            <RefreshCw
+              size={16}
+              className="network-ping-spinner"
+              aria-hidden="true"
+            />
+          ) : pingErrorMessage ? (
+            "失敗"
+          ) : (
+            <>
+              {formattedPing} <small>ms</small>
+            </>
+          )}
         </span>
       </div>
     </section>

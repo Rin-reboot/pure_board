@@ -59,7 +59,7 @@ The following values are currently placeholders:
 
 None.
 
-Network speed and Ping are retrieved by Rust commands. Ping is measured only when the user presses the Ping button, avoiding periodic traffic to external services.
+Network speed and Ping are retrieved by Rust commands. Ping uses the OS ping command and is measured only when the user presses the Ping button, avoiding periodic traffic to external services.
 
 ---
 
@@ -187,7 +187,8 @@ Implemented behavior:
 
 * Ping is triggered by a button in the Network widget
 * the app does not send periodic Ping traffic
-* the initial target is Google DNS over TCP, `8.8.8.8:443`
+* the default target host is `8.8.8.8`
+* users can change the target host from Settings
 
 ---
 

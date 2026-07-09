@@ -5,8 +5,10 @@ interface SettingsPanelProps {
   closeActionPreference: CloseActionPreference;
   isAutoStartEnabled: boolean;
   isAutoStartLoaded: boolean;
+  pingTargetHost: string;
   updateIntervalMs: number;
   onCloseActionPreferenceChange: (value: CloseActionPreference) => void;
+  onPingTargetHostChange: (value: string) => void;
   onToggleAutoStart: () => void;
   onUpdateIntervalChange: (valueMs: number) => void;
 }
@@ -15,8 +17,10 @@ export function SettingsPanel({
   closeActionPreference,
   isAutoStartEnabled,
   isAutoStartLoaded,
+  pingTargetHost,
   updateIntervalMs,
   onCloseActionPreferenceChange,
+  onPingTargetHostChange,
   onToggleAutoStart,
   onUpdateIntervalChange,
 }: SettingsPanelProps) {
@@ -48,6 +52,25 @@ export function SettingsPanel({
               onUpdateIntervalChange(Number(event.target.value) * 1000)
             }
             aria-label="Update interval"
+          />
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <span className="settings-section-title">Network</span>
+        <div className="settings-row">
+          <div className="settings-row-copy">
+            <span className="settings-row-label">Ping target</span>
+            <span className="settings-row-value">
+              Host used by the manual ping command
+            </span>
+          </div>
+          <input
+            className="settings-text-input"
+            type="text"
+            value={pingTargetHost}
+            onChange={(event) => onPingTargetHostChange(event.target.value)}
+            aria-label="Ping target"
           />
         </div>
       </div>

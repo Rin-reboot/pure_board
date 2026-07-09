@@ -25,6 +25,7 @@ import {
   useCloseActionPreference,
 } from "./hooks/useCloseActionPreference";
 import { useNetworkUsage } from "./hooks/useNetworkUsage";
+import { usePingTargetSetting } from "./hooks/usePingTargetSetting";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
 import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
@@ -33,7 +34,6 @@ import { useWidgetLayout, type WidgetId } from "./hooks/useWidgetLayout";
 
 const DETAIL_HISTORY_LENGTH = 120;
 const CARD_HISTORY_LENGTH = 40;
-const PING_TARGET = { label: "Google DNS", host: "8.8.8.8", port: 443 };
 
 interface PingResult {
   latency_ms: number;
@@ -58,6 +58,7 @@ function App() {
   } = useAutoStart();
   const { closeActionPreference, setCloseActionPreference } =
     useCloseActionPreference();
+  const { pingTargetHost, setPingTargetHost } = usePingTargetSetting();
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
@@ -75,6 +76,7 @@ function App() {
     [cpuHistory],
   );
   const [pingMs, setPingMs] = useState<number | null>(null);
+  const [pingErrorMessage, setPingErrorMessage] = useState<string | null>(null);
   const [isMeasuringPing, setIsMeasuringPing] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCloseActionDialogOpen, setIsCloseActionDialogOpen] = useState(false);
@@ -86,21 +88,31 @@ function App() {
 
   const handleMeasurePing = useCallback(async () => {
     setIsMeasuringPing(true);
+    setPingErrorMessage(null);
     try {
       const result = await invoke<PingResult>("measure_ping", {
         target: {
-          host: PING_TARGET.host,
-          port: PING_TARGET.port,
+          host: pingTargetHost,
         },
       });
       setPingMs(result.latency_ms);
     } catch (err) {
       console.error("Failed to measure ping:", err);
       setPingMs(null);
+      setPingErrorMessage(getErrorMessage(err));
     } finally {
       setIsMeasuringPing(false);
     }
-  }, []);
+  }, [pingTargetHost]);
+
+  const handlePingTargetHostChange = useCallback(
+    async (next: string) => {
+      setPingMs(null);
+      setPingErrorMessage(null);
+      await setPingTargetHost(next);
+    },
+    [setPingTargetHost],
+  );
 
   const runCloseAction = useCallback(async (action: CloseAction) => {
     try {
@@ -157,7 +169,8 @@ function App() {
             downloadMbps={networkUsage?.download_mbps ?? 0}
             uploadMbps={networkUsage?.upload_mbps ?? 0}
             pingMs={pingMs}
-            pingTargetLabel={PING_TARGET.label}
+            pingErrorMessage={pingErrorMessage}
+            pingTargetLabel={pingTargetHost}
             isMeasuringPing={isMeasuringPing}
             onMeasurePing={handleMeasurePing}
           />
@@ -263,8 +276,10 @@ function App() {
           closeActionPreference={closeActionPreference}
           isAutoStartEnabled={isAutoStartEnabled}
           isAutoStartLoaded={isAutoStartLoaded}
+          pingTargetHost={pingTargetHost}
           updateIntervalMs={updateIntervalMs}
           onCloseActionPreferenceChange={setCloseActionPreference}
+          onPingTargetHostChange={handlePingTargetHostChange}
           onToggleAutoStart={toggleAutoStart}
           onUpdateIntervalChange={setUpdateIntervalMs}
         />
@@ -315,6 +330,12 @@ function App() {
       />
     </main>
   );
+}
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return "Unknown error";
 }
 
 export default App;

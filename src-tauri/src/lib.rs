@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::{
     cmp::Reverse,
-    net::{TcpStream, ToSocketAddrs},
+    process::Command,
     sync::Mutex,
     time::{Duration, Instant},
 };
@@ -41,7 +41,6 @@ struct NetworkUsage {
 #[derive(serde::Deserialize)]
 struct PingTarget {
     host: String,
-    port: u16,
 }
 
 #[derive(Serialize)]
@@ -136,28 +135,137 @@ fn get_network_usage(state: tauri::State<AppState>) -> NetworkUsage {
 
 #[tauri::command]
 fn measure_ping(target: PingTarget) -> Result<PingResult, String> {
-    if target.host.trim().is_empty() {
+    let host = target.host.trim();
+    if host.is_empty() {
         return Err("Ping target host is empty".to_string());
     }
 
-    if target.port == 0 {
-        return Err("Ping target port is invalid".to_string());
+    let mut command = Command::new("ping");
+
+    #[cfg(target_os = "windows")]
+    command.args(["-n", "1", "-w", "1000"]).arg(host);
+
+    #[cfg(target_os = "linux")]
+    command.args(["-c", "1", "-W", "1"]).arg(host);
+
+    #[cfg(target_os = "macos")]
+    command.args(["-c", "1", "-W", "1000"]).arg(host);
+
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    command.args(["-c", "1"]).arg(host);
+
+    let output = command
+        .output()
+        .map_err(|err| format!("Failed to execute ping command: {err}"))?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    if !output.status.success() {
+        let message = [stdout.trim(), stderr.trim()]
+            .into_iter()
+            .filter(|part| !part.is_empty())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        return Err(if message.is_empty() {
+            "Ping command failed".to_string()
+        } else {
+            format!("Ping command failed: {message}")
+        });
     }
 
-    let timeout = Duration::from_secs(1);
-    let address = (target.host.as_str(), target.port)
-        .to_socket_addrs()
-        .map_err(|err| format!("Failed to resolve ping target: {err}"))?
-        .next()
-        .ok_or_else(|| "Ping target did not resolve to an address".to_string())?;
+    let latency_ms = parse_ping_latency_ms(&output.stdout)
+        .ok_or_else(|| "Failed to parse ping command latency".to_string())?;
 
-    let started_at = Instant::now();
-    TcpStream::connect_timeout(&address, timeout)
-        .map_err(|err| format!("Failed to connect to ping target: {err}"))?;
+    Ok(PingResult { latency_ms })
+}
+fn parse_ping_latency_ms(output: &[u8]) -> Option<u64> {
+    output
+        .windows(2)
+        .enumerate()
+        .filter(|(_, bytes)| bytes.eq_ignore_ascii_case(b"ms"))
+        .find_map(|(index, _)| parse_latency_before_ms(&output[..index]))
+}
 
-    Ok(PingResult {
-        latency_ms: started_at.elapsed().as_millis().min(u64::MAX as u128) as u64,
-    })
+fn parse_latency_before_ms(value: &[u8]) -> Option<u64> {
+    let mut end = value.len();
+    while end > 0 && value[end - 1].is_ascii_whitespace() {
+        end -= 1;
+    }
+
+    let mut start = end;
+    while start > 0 && (value[start - 1].is_ascii_digit() || value[start - 1] == b'.') {
+        start -= 1;
+    }
+
+    if start == end {
+        return None;
+    }
+
+    let mut operator_index = start;
+    while operator_index > 0 && value[operator_index - 1].is_ascii_whitespace() {
+        operator_index -= 1;
+    }
+
+    if operator_index == 0 {
+        return None;
+    }
+
+    let operator = value[operator_index - 1];
+    if operator != b'=' && operator != b'<' {
+        return None;
+    }
+
+    let numeric_text = std::str::from_utf8(&value[start..end]).ok()?;
+    let latency = numeric_text.parse::<f64>().ok()?;
+
+    if operator == b'<' {
+        return Some(latency.ceil().max(1.0) as u64 - 1);
+    }
+
+    Some(latency.round().max(0.0) as u64)
+}
+#[cfg(test)]
+mod tests {
+    use super::parse_ping_latency_ms;
+
+    #[test]
+    fn parses_windows_ping_latency() {
+        let output = "Reply from 8.8.8.8: bytes=32 time=4ms TTL=118";
+
+        assert_eq!(parse_ping_latency_ms(output.as_bytes()), Some(4));
+    }
+
+    #[test]
+    fn parses_windows_sub_millisecond_latency() {
+        let output = "Reply from 127.0.0.1: bytes=32 time<1ms TTL=128";
+
+        assert_eq!(parse_ping_latency_ms(output.as_bytes()), Some(0));
+    }
+
+    #[test]
+    fn parses_japanese_windows_ping_latency() {
+        let output = "8.8.8.8 からの応答: バイト数 =32 時間 =4ms TTL=118";
+
+        assert_eq!(parse_ping_latency_ms(output.as_bytes()), Some(4));
+    }
+
+    #[test]
+    fn parses_linux_ping_latency() {
+        let output = "64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=4.23 ms";
+
+        assert_eq!(parse_ping_latency_ms(output.as_bytes()), Some(4));
+    }
+
+    #[test]
+    fn parses_latency_from_non_utf8_windows_output() {
+        let output = [
+            0x82, 0xa9, 0x82, 0xe7, 0x82, 0xcc, b' ', b'=', b'4', b'm', b's', b' ', b'T', b'T',
+            b'L', b'=', b'1', b'1', b'8',
+        ];
+
+        assert_eq!(parse_ping_latency_ms(&output), Some(4));
+    }
 }
 
 fn bytes_to_mbps(bytes: u64, elapsed: Duration) -> f64 {
