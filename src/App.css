@@ -85,7 +85,6 @@ body,
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: var(--radius-window);
-  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   overflow: hidden;
 }
