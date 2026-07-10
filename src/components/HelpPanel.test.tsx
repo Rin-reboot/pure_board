@@ -25,6 +25,23 @@ describe("HelpPanel", () => {
     expect(getByRole("heading", { name: "メモを追加する" })).toBeTruthy();
   });
 
+  it("collapses and reopens the help navigation", () => {
+    const { getByLabelText } = render(<HelpPanel />);
+
+    const closeButton = getByLabelText("目次を閉じる");
+    expect(closeButton).toHaveProperty("ariaExpanded", "true");
+
+    fireEvent.click(closeButton);
+
+    expect(getByLabelText("ヘルプ項目")).toHaveProperty("hidden", true);
+    const openButton = getByLabelText("目次を開く");
+    expect(openButton).toHaveProperty("ariaExpanded", "false");
+
+    fireEvent.click(openButton);
+
+    expect(getByLabelText("ヘルプ項目")).toHaveProperty("hidden", false);
+  });
+
   it("contains every required basic help topic", () => {
     expect(HELP_TOPICS.map((topic) => topic.id)).toEqual([
       "getting-started",

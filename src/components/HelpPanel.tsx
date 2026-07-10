@@ -1,4 +1,4 @@
-import { BookOpen } from "lucide-react";
+import { BookOpen, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
@@ -12,18 +12,47 @@ const DEFAULT_TOPIC_ID: HelpTopicId = "getting-started";
 export function HelpPanel() {
   const [selectedTopicId, setSelectedTopicId] =
     useState<HelpTopicId>(DEFAULT_TOPIC_ID);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const selectedTopic =
     HELP_TOPICS.find((topic) => topic.id === selectedTopicId) ?? HELP_TOPICS[0];
 
   return (
     <section className="help-panel" aria-label="Help">
       <div className="help-panel-header">
-        <BookOpen size={17} aria-hidden="true" />
-        <span>Help</span>
+        <div className="help-panel-header-title">
+          <BookOpen size={17} aria-hidden="true" />
+          <span>Help</span>
+        </div>
+        <button
+          type="button"
+          className="help-sidebar-toggle"
+          aria-controls="help-sidebar"
+          aria-expanded={isSidebarOpen}
+          aria-label={isSidebarOpen ? "目次を閉じる" : "目次を開く"}
+          title={isSidebarOpen ? "目次を閉じる" : "目次を開く"}
+          onClick={() => setIsSidebarOpen((current) => !current)}
+        >
+          {isSidebarOpen ? (
+            <PanelLeftClose size={16} aria-hidden="true" />
+          ) : (
+            <PanelLeftOpen size={16} aria-hidden="true" />
+          )}
+        </button>
       </div>
 
-      <div className="help-layout">
-        <nav className="help-sidebar" aria-label="ヘルプ項目">
+      <div
+        className={
+          isSidebarOpen
+            ? "help-layout"
+            : "help-layout help-layout-sidebar-closed"
+        }
+      >
+        <nav
+          id="help-sidebar"
+          className="help-sidebar"
+          aria-label="ヘルプ項目"
+          hidden={!isSidebarOpen}
+        >
           {HELP_CATEGORIES.map((category) => (
             <div className="help-nav-group" key={category}>
               <span className="help-nav-category">{category}</span>
