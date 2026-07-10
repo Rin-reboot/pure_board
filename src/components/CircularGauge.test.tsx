@@ -20,9 +20,16 @@ describe("CircularGauge", () => {
     );
     const ring = container.querySelector(".gauge-ring");
 
-    expect(ring?.getAttribute("stroke-dashoffset")).toBe(
-      ring?.getAttribute("stroke-dasharray"),
-    );
+    if (!ring) {
+      throw new Error("Gauge ring was not rendered");
+    }
+
+    const dashArray = ring.getAttribute("stroke-dasharray");
+    const dashOffset = ring.getAttribute("stroke-dashoffset");
+
+    expect(dashArray).not.toBeNull();
+    expect(Number(dashArray)).toBeGreaterThan(0);
+    expect(dashOffset).toBe(dashArray);
   });
 
   it("clamps values above one hundred", () => {

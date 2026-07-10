@@ -54,29 +54,24 @@ describe("useSystemUsage", () => {
     expect(tauriMocks.invoke).toHaveBeenCalledTimes(3);
   });
 
-  it("does not update after unmount", async () => {
-    let resolveUsage: (value: {
-      cpu_usage: number;
-      cpu_name: string;
-      mem_used: number;
-      mem_total: number;
-    }) => void = () => {};
-    tauriMocks.invoke.mockReturnValue(
-      new Promise((resolve) => {
-        resolveUsage = resolve;
-      }),
-    );
-
-    const { result, unmount } = renderHook(() => useSystemUsage());
-
-    unmount();
-    resolveUsage({
+  it("stops polling after unmount", async () => {
+    vi.useFakeTimers();
+    tauriMocks.invoke.mockResolvedValue({
       cpu_usage: 33,
       cpu_name: "Test CPU",
       mem_used: 10,
       mem_total: 20,
     });
 
-    await waitFor(() => expect(result.current).toBeNull());
+    const { unmount } = renderHook(() => useSystemUsage(500));
+
+    expect(tauriMocks.invoke).toHaveBeenCalledTimes(1);
+    unmount();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+
+    expect(tauriMocks.invoke).toHaveBeenCalledTimes(1);
   });
 });

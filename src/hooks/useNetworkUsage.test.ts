@@ -50,25 +50,22 @@ describe("useNetworkUsage", () => {
     expect(tauriMocks.invoke).toHaveBeenCalledTimes(3);
   });
 
-  it("does not update after unmount", async () => {
-    let resolveUsage: (value: {
-      download_mbps: number;
-      upload_mbps: number;
-    }) => void = () => {};
-    tauriMocks.invoke.mockReturnValue(
-      new Promise((resolve) => {
-        resolveUsage = resolve;
-      }),
-    );
-
-    const { result, unmount } = renderHook(() => useNetworkUsage());
-
-    unmount();
-    resolveUsage({
+  it("stops polling after unmount", async () => {
+    vi.useFakeTimers();
+    tauriMocks.invoke.mockResolvedValue({
       download_mbps: 12.4,
       upload_mbps: 2.8,
     });
 
-    await waitFor(() => expect(result.current).toBeNull());
+    const { unmount } = renderHook(() => useNetworkUsage(500));
+
+    expect(tauriMocks.invoke).toHaveBeenCalledTimes(1);
+    unmount();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+
+    expect(tauriMocks.invoke).toHaveBeenCalledTimes(1);
   });
 });
