@@ -1570,48 +1570,58 @@ select:focus-visible {
   top: 58px;
   right: 14px;
   z-index: 3;
-  width: min(332px, calc(100% - 28px));
+  width: min(360px, calc(100% - 28px));
   max-height: calc(100vh - 92px);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
+  overflow: hidden;
   background:
-    linear-gradient(180deg, var(--glass-highlight-soft), transparent 42%),
-    var(--bg-panel);
-  backdrop-filter: var(--blur-panel);
-  -webkit-backdrop-filter: var(--blur-panel);
+    linear-gradient(180deg, var(--glass-highlight-soft), transparent 44%),
+    var(--bg-card);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
   box-shadow:
-    var(--shadow-panel),
+    var(--shadow-card),
     inset 0 1px 0 var(--glass-highlight);
   transform-origin: top right;
   animation: panel-enter var(--motion-duration-slow) var(--motion-ease-out);
 }
 
-.settings-panel::-webkit-scrollbar {
+.settings-panel-content::-webkit-scrollbar {
   display: none;
 }
 
 .settings-panel-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .settings-panel-title {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.settings-panel-content {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 15px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
 }
 
 .settings-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .settings-section-title {
@@ -1626,7 +1636,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
+  padding: 11px 0;
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -1653,7 +1663,7 @@ select:focus-visible {
   width: 82px;
   background-color: var(--surface-input);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 10px;
   color: var(--text-primary);
   font-size: 0.8rem;
@@ -1683,7 +1693,7 @@ select:focus-visible {
   max-width: 132px;
   background-color: var(--surface-input);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 10px;
   color: var(--text-primary);
   font-size: 0.78rem;
