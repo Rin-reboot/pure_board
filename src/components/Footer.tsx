@@ -1,13 +1,22 @@
-import { BarChart3, ClipboardList, Moon, Pencil, Sun } from "lucide-react";
+import {
+  BarChart3,
+  CircleHelp,
+  ClipboardList,
+  Moon,
+  Pencil,
+  Sun,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Theme } from "../hooks/useTheme";
 
 interface FooterProps {
   isHistoryOpen: boolean;
+  isHelpOpen: boolean;
   isEditMode: boolean;
   isShortcutsOpen: boolean;
   theme: Theme;
   onToggleHistory: () => void;
+  onToggleHelp: () => void;
   onToggleEditMode: () => void;
   onToggleShortcuts: () => void;
   onToggleTheme: () => void;
@@ -22,10 +31,12 @@ function formatDateTime(date: Date): string {
 
 export function Footer({
   isHistoryOpen,
+  isHelpOpen,
   isEditMode,
   isShortcutsOpen,
   theme,
   onToggleHistory,
+  onToggleHelp,
   onToggleEditMode,
   onToggleShortcuts,
   onToggleTheme,
@@ -66,6 +77,15 @@ export function Footer({
           onClick={onToggleHistory}
         >
           <BarChart3 size={14} />
+        </button>
+        <button
+          type="button"
+          aria-label="Help"
+          aria-pressed={isHelpOpen}
+          className={isHelpOpen ? "is-active" : ""}
+          onClick={onToggleHelp}
+        >
+          <CircleHelp size={14} />
         </button>
       </div>
       <span className="footer-datetime">{formatDateTime(now)}</span>

@@ -17,10 +17,12 @@ describe("Footer", () => {
     const { getByText } = render(
       <Footer
         isHistoryOpen={false}
+        isHelpOpen={false}
         isEditMode={false}
         isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={vi.fn()}
+        onToggleHelp={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
@@ -42,10 +44,12 @@ describe("Footer", () => {
     const { getByLabelText } = render(
       <Footer
         isHistoryOpen={false}
+        isHelpOpen={false}
         isEditMode={false}
         isShortcutsOpen={false}
         theme="light"
         onToggleHistory={vi.fn()}
+        onToggleHelp={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleShortcuts={vi.fn()}
         onToggleTheme={onToggleTheme}
@@ -62,10 +66,12 @@ describe("Footer", () => {
     const { getByLabelText } = render(
       <Footer
         isHistoryOpen={false}
+        isHelpOpen={false}
         isEditMode={false}
         isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={vi.fn()}
+        onToggleHelp={vi.fn()}
         onToggleEditMode={onToggleEditMode}
         onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
@@ -82,10 +88,12 @@ describe("Footer", () => {
     const { getByLabelText } = render(
       <Footer
         isHistoryOpen={false}
+        isHelpOpen={false}
         isEditMode={false}
         isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={onToggleHistory}
+        onToggleHelp={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleShortcuts={vi.fn()}
         onToggleTheme={vi.fn()}
@@ -102,10 +110,12 @@ describe("Footer", () => {
     const { getByLabelText } = render(
       <Footer
         isHistoryOpen={false}
+        isHelpOpen={false}
         isEditMode={false}
         isShortcutsOpen={false}
         theme="dark"
         onToggleHistory={vi.fn()}
+        onToggleHelp={vi.fn()}
         onToggleEditMode={vi.fn()}
         onToggleShortcuts={onToggleShortcuts}
         onToggleTheme={vi.fn()}
@@ -115,5 +125,30 @@ describe("Footer", () => {
     fireEvent.click(getByLabelText("Shortcuts"));
 
     expect(onToggleShortcuts).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the help toggle handler and exposes the active state", () => {
+    const onToggleHelp = vi.fn();
+    const { getByLabelText } = render(
+      <Footer
+        isHistoryOpen={false}
+        isHelpOpen={true}
+        isEditMode={false}
+        isShortcutsOpen={false}
+        theme="dark"
+        onToggleHistory={vi.fn()}
+        onToggleHelp={onToggleHelp}
+        onToggleEditMode={vi.fn()}
+        onToggleShortcuts={vi.fn()}
+        onToggleTheme={vi.fn()}
+      />,
+    );
+
+    const helpButton = getByLabelText("Help");
+    expect(helpButton).toHaveProperty("ariaPressed", "true");
+
+    fireEvent.click(helpButton);
+
+    expect(onToggleHelp).toHaveBeenCalledTimes(1);
   });
 });

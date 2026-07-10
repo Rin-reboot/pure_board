@@ -11,6 +11,7 @@ import {
 import { CloseActionDialog } from "./components/CloseActionDialog";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
+import { HelpPanel } from "./components/HelpPanel";
 import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
@@ -50,6 +51,8 @@ interface DragState {
   width: number;
 }
 
+type ActiveView = "dashboard" | "help" | "history" | "shortcuts";
+
 function App() {
   const { theme, toggleTheme } = useTheme();
   const { isPinned, togglePin } = useAlwaysOnTop();
@@ -88,8 +91,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCloseActionDialogOpen, setIsCloseActionDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [activeView, setActiveView] = useState<ActiveView>("dashboard");
   const [dragState, setDragState] = useState<DragState | null>(null);
   const stackRef = useRef<HTMLDivElement | null>(null);
   const draggingWidgetId = dragState?.id ?? null;
@@ -156,15 +158,12 @@ function App() {
     [runCloseAction, setCloseActionPreference],
   );
 
-  const handleToggleHistory = useCallback(() => {
-    setIsShortcutsOpen(false);
-    setIsHistoryOpen((prev) => !prev);
-  }, []);
-
-  const handleToggleShortcuts = useCallback(() => {
-    setIsHistoryOpen(false);
-    setIsShortcutsOpen((prev) => !prev);
-  }, []);
+  const handleToggleView = useCallback(
+    (view: Exclude<ActiveView, "dashboard">) => {
+      setActiveView((current) => (current === view ? "dashboard" : view));
+    },
+    [],
+  );
 
   const renderWidget = (id: WidgetId) => {
     switch (id) {
@@ -318,17 +317,19 @@ function App() {
         onPointerUp={handleWidgetDragEnd}
         onPointerCancel={handleWidgetDragEnd}
       >
-        {isShortcutsOpen ? (
+        {activeView === "shortcuts" ? (
           <ShortcutPanel
             shortcuts={runnableShortcuts}
             isLoaded={areShortcutButtonsLoaded}
           />
-        ) : isHistoryOpen ? (
+        ) : activeView === "history" ? (
           <SystemHistoryView
             cpuHistory={cpuHistory}
             ramHistory={ramHistory}
             updateIntervalMs={updateIntervalMs}
           />
+        ) : activeView === "help" ? (
+          <HelpPanel />
         ) : (
           layout
             .filter((widget) => isEditMode || widget.visible)
@@ -351,13 +352,15 @@ function App() {
       </div>
 
       <Footer
-        isHistoryOpen={isHistoryOpen}
+        isHistoryOpen={activeView === "history"}
+        isHelpOpen={activeView === "help"}
         isEditMode={isEditMode}
-        isShortcutsOpen={isShortcutsOpen}
+        isShortcutsOpen={activeView === "shortcuts"}
         theme={theme}
-        onToggleHistory={handleToggleHistory}
+        onToggleHistory={() => handleToggleView("history")}
+        onToggleHelp={() => handleToggleView("help")}
         onToggleEditMode={() => setIsEditMode((prev) => !prev)}
-        onToggleShortcuts={handleToggleShortcuts}
+        onToggleShortcuts={() => handleToggleView("shortcuts")}
         onToggleTheme={toggleTheme}
       />
     </main>

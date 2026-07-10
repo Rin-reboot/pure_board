@@ -39,30 +39,6 @@ export function ShortcutPanel({ shortcuts, isLoaded }: ShortcutPanelProps) {
 
   return (
     <div className="shortcuts-screen">
-      <section className="shortcuts-help-card" aria-label="Shortcut help">
-        <span className="shortcuts-help-title">使い方</span>
-        <div className="shortcuts-help-grid">
-          <div>
-            <span className="shortcuts-help-label">URL / File / App</span>
-            <p>
-              実行方法を選びます。URL はブラウザ、File は既定アプリ、 App
-              は指定した実行ファイルを起動します。
-            </p>
-          </div>
-          <div>
-            <span className="shortcuts-help-label">Globe / Folder / App</span>
-            <p>ボタンに表示するアイコンです。実行内容には影響しません。</p>
-          </div>
-          <div>
-            <span className="shortcuts-help-label">Target の形式</span>
-            <p>
-              URL は http:// または https://、File はファイル/フォルダのパス、
-              App は起動する .exe などのパスを入力します。
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="shortcuts-view" aria-label="Shortcuts">
         <div className="shortcuts-view-header">
           <span className="shortcuts-view-title">Shortcuts</span>

@@ -21,11 +21,6 @@ describe("ShortcutPanel", () => {
       <ShortcutPanel shortcuts={[]} isLoaded={true} />,
     );
 
-    expect(getByText("使い方")).toBeTruthy();
-    expect(getByText("URL / File / App")).toBeTruthy();
-    expect(getByText("Globe / Folder / App")).toBeTruthy();
-    expect(getByText("Target の形式")).toBeTruthy();
-    expect(getByText(/URL は http:\/\/ または https:\/\//)).toBeTruthy();
     expect(getByText("Settings からショートカットを追加")).toBeTruthy();
   });
 
