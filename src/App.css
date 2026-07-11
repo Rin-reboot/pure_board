@@ -40,7 +40,7 @@
   --accent-cpu: #4a9eff;
   --accent-ram: #34d399;
   --accent-network: #a78bfa;
-  --accent-memo: #fbbf24;
+  --accent-todo: #fbbf24;
 
   --radius-window: 20px;
   --radius-card: 14px;
@@ -84,7 +84,7 @@
   --accent-cpu: #2f6fe0;
   --accent-ram: #0fa968;
   --accent-network: #7c4fe0;
-  --accent-memo: #d97706;
+  --accent-todo: #d97706;
 }
 
 html,
@@ -1104,21 +1104,21 @@ body,
 }
 
 /* ============================================================
-   Memo card
+   TODO card
    ============================================================ */
-.memo-card {
+.todo-card {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.memo-header {
+.todo-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.memo-title {
+.todo-title {
   font-weight: 600;
   font-size: 0.95rem;
   display: flex;
@@ -1126,12 +1126,12 @@ body,
   gap: 8px;
 }
 
-.memo-header-actions {
+.todo-header-actions {
   display: flex;
   gap: 4px;
 }
 
-.memo-header-actions button {
+.todo-header-actions button {
   width: 26px;
   height: 26px;
   display: grid;
@@ -1147,29 +1147,29 @@ body,
     transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.memo-header-actions button:hover {
+.todo-header-actions button:hover {
   background-color: var(--hover-overlay);
   color: var(--text-primary);
 }
 
-.memo-header-actions .memo-view-toggle-active {
+.todo-header-actions .todo-view-toggle-active {
   background-color: var(--hover-overlay);
-  color: var(--accent-memo);
+  color: var(--accent-todo);
 }
 
-.memo-loading {
+.todo-loading {
   font-size: 0.8rem;
   color: var(--text-tertiary);
   padding: 8px 0;
 }
 
-.memo-list-expanded {
+.todo-list-expanded {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.memo-list-toolbar {
+.todo-list-toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1184,13 +1184,13 @@ body,
   animation: content-reveal var(--motion-duration-base) var(--motion-ease-out);
 }
 
-.memo-count {
+.todo-count {
   flex-shrink: 0;
   font-size: 0.72rem;
   color: var(--text-tertiary);
 }
 
-.memo-filter-group {
+.todo-filter-group {
   display: flex;
   gap: 4px;
   min-width: 0;
@@ -1199,7 +1199,7 @@ body,
   border: 0;
 }
 
-.memo-filter-group button {
+.todo-filter-group button {
   border: none;
   border-radius: 7px;
   padding: 5px 8px;
@@ -1213,13 +1213,13 @@ body,
     transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.memo-filter-group button:hover,
-.memo-filter-group .memo-filter-active {
+.todo-filter-group button:hover,
+.todo-filter-group .todo-filter-active {
   background-color: var(--hover-overlay);
   color: var(--text-primary);
 }
 
-.memo-filter-select {
+.todo-filter-select {
   flex: 1;
   min-width: 92px;
   appearance: none;
@@ -1237,24 +1237,24 @@ body,
     box-shadow var(--motion-duration-base) ease;
 }
 
-.memo-filter-select:focus {
+.todo-filter-select:focus {
   outline: none;
-  border-color: var(--accent-memo);
+  border-color: var(--accent-todo);
 }
 
-.memo-filter-select option {
+.todo-filter-select option {
   background-color: #1c2333;
   color: #f2f4f8;
 }
 
-.memo-list-empty {
+.todo-list-empty {
   margin: 0;
   padding: 8px 0;
   font-size: 0.8rem;
   color: var(--text-tertiary);
 }
 
-.memo-list {
+.todo-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1262,21 +1262,21 @@ body,
   flex-direction: column;
 }
 
-.memo-item {
+.todo-item {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 0;
   border-bottom: 1px solid var(--border-subtle);
-  animation: memo-item-enter var(--motion-duration-base) var(--motion-ease-out);
+  animation: todo-item-enter var(--motion-duration-base) var(--motion-ease-out);
 }
 
-.memo-item:last-child {
+.todo-item:last-child {
   border-bottom: none;
 }
 
-.memo-checkbox {
+.todo-checkbox {
   position: relative;
   display: grid;
   place-items: center;
@@ -1285,14 +1285,14 @@ body,
   flex-shrink: 0;
 }
 
-.memo-checkbox input {
+.todo-checkbox input {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.memo-checkbox-box {
+.todo-checkbox-box {
   width: 18px;
   height: 18px;
   border-radius: 5px;
@@ -1305,20 +1305,20 @@ body,
     transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.memo-checkbox input:checked + .memo-checkbox-box {
+.todo-checkbox input:checked + .todo-checkbox-box {
   background-color: var(--accent-ram);
   border-color: var(--accent-ram);
   transform: scale(1.04);
 }
 
-.memo-checkbox input:checked + .memo-checkbox-box::after {
+.todo-checkbox input:checked + .todo-checkbox-box::after {
   content: "✓";
   font-size: 0.7rem;
   color: var(--on-accent);
   animation: check-enter var(--motion-duration-base) var(--motion-ease-out);
 }
 
-.memo-text {
+.todo-text {
   flex: 1;
   font-size: 0.85rem;
   min-width: 0;
@@ -1328,12 +1328,12 @@ body,
     opacity var(--motion-duration-base) ease;
 }
 
-.memo-text-done {
+.todo-text-done {
   color: var(--text-tertiary);
   text-decoration: line-through;
 }
 
-.memo-tag {
+.todo-tag {
   flex-shrink: 0;
   font-size: 0.7rem;
   padding: 3px 9px;
@@ -1347,12 +1347,12 @@ body,
     transform var(--motion-duration-base) var(--motion-ease-out);
 }
 
-.memo-tag-done {
+.todo-tag-done {
   background-color: var(--success-overlay);
   color: var(--accent-ram);
 }
 
-.memo-delete {
+.todo-delete {
   width: 22px;
   height: 22px;
   display: grid;
@@ -1371,23 +1371,23 @@ body,
     transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.memo-item:hover .memo-delete,
-.memo-item:focus-within .memo-delete {
+.todo-item:hover .todo-delete,
+.todo-item:focus-within .todo-delete {
   opacity: 1;
 }
 
-.memo-delete:hover {
+.todo-delete:hover {
   background-color: var(--danger-overlay);
   color: #f87171;
 }
 
-.memo-input-row {
+.todo-input-row {
   display: flex;
   gap: 8px;
   margin-top: 4px;
 }
 
-.memo-tag-select {
+.todo-tag-select {
   flex-shrink: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -1410,17 +1410,17 @@ body,
     box-shadow var(--motion-duration-base) ease;
 }
 
-.memo-tag-select:focus {
+.todo-tag-select:focus {
   outline: none;
   border-color: var(--accent-cpu);
 }
 
-.memo-tag-select option {
+.todo-tag-select option {
   background-color: #1c2333;
   color: #f2f4f8;
 }
 
-.memo-input-row input {
+.todo-input-row input {
   flex: 1;
   min-width: 0;
   background-color: var(--surface-input);
@@ -1438,16 +1438,16 @@ body,
     box-shadow var(--motion-duration-base) ease;
 }
 
-.memo-input-row input::placeholder {
+.todo-input-row input::placeholder {
   color: var(--text-tertiary);
 }
 
-.memo-input-row input:focus {
+.todo-input-row input:focus {
   outline: none;
   border-color: var(--accent-cpu);
 }
 
-.memo-input-row button {
+.todo-input-row button {
   width: 36px;
   height: 36px;
   display: grid;
@@ -1465,7 +1465,7 @@ body,
     transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.memo-input-row button:hover {
+.todo-input-row button:hover {
   background-color: var(--accent-cpu);
   color: var(--on-accent);
   box-shadow: 0 5px 14px var(--active-overlay);
@@ -1996,7 +1996,7 @@ button:not(:disabled):active {
   }
 }
 
-@keyframes memo-item-enter {
+@keyframes todo-item-enter {
   from {
     opacity: 0;
     transform: translateX(-4px);
@@ -2068,7 +2068,7 @@ button:not(:disabled):active {
 
   .widget-frame-dragging,
   .shortcut-button:hover:not(:disabled),
-  .memo-input-row button:hover,
+  .todo-input-row button:hover,
   .close-action-dialog-actions button:hover,
   button:not(:disabled):active {
     transform: none;

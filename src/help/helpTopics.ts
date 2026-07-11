@@ -1,10 +1,10 @@
 import gettingStarted from "./content/getting-started.md?raw";
 import layoutEditing from "./content/layout-editing.md?raw";
-import memo from "./content/memo.md?raw";
 import networkPing from "./content/network-ping.md?raw";
 import settings from "./content/settings.md?raw";
 import shortcuts from "./content/shortcuts.md?raw";
 import systemMonitor from "./content/system-monitor.md?raw";
+import todo from "./content/todo.md?raw";
 import troubleshooting from "./content/troubleshooting.md?raw";
 import windowControls from "./content/window-controls.md?raw";
 
@@ -49,7 +49,7 @@ export const HELP_TOPICS = [
     category: "機能",
     content: networkPing,
   },
-  { id: "memo", title: "Memo", category: "機能", content: memo },
+  { id: "todo", title: "TODO", category: "機能", content: todo },
   {
     id: "shortcuts",
     title: "Shortcuts",

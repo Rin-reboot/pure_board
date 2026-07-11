@@ -82,7 +82,7 @@ Good examples:
 
 * CpuCard
 * RamCard
-* MemoPanel
+* TodoPanel
 * TitleBar
 
 Avoid components that perform multiple unrelated tasks.
@@ -149,7 +149,7 @@ Examples:
 Good
 
 * CpuCard
-* MemoPanel
+* TodoPanel
 * useSystemUsage
 
 Avoid

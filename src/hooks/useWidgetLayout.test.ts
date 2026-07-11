@@ -31,7 +31,7 @@ afterEach(() => {
 describe("useWidgetLayout", () => {
   it("loads a saved widget layout", async () => {
     const savedLayout = [
-      { id: "memo", visible: true },
+      { id: "todo", visible: true },
       { id: "cpu", visible: true },
       { id: "ram", visible: false },
       { id: "network", visible: true },
@@ -47,8 +47,28 @@ describe("useWidgetLayout", () => {
     expect(store.set).not.toHaveBeenCalled();
   });
 
+  it("migrates the legacy memo widget id", async () => {
+    const store = createStore([
+      { id: "memo", visible: false },
+      { id: "cpu", visible: true },
+      { id: "ram", visible: true },
+      { id: "network", visible: true },
+    ]);
+    storeMocks.load.mockResolvedValue(store);
+
+    const { result } = renderHook(() => useWidgetLayout());
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(true));
+
+    expect(result.current.layout[0]).toEqual({ id: "todo", visible: false });
+    expect(store.set).toHaveBeenCalledWith(
+      "widgetLayout",
+      result.current.layout,
+    );
+  });
+
   it("fills missing widgets when saved layout is incomplete", async () => {
-    const store = createStore([{ id: "memo", visible: false }]);
+    const store = createStore([{ id: "todo", visible: false }]);
     storeMocks.load.mockResolvedValue(store);
 
     const { result } = renderHook(() => useWidgetLayout());
@@ -56,7 +76,7 @@ describe("useWidgetLayout", () => {
     await waitFor(() => expect(result.current.isLoaded).toBe(true));
 
     expect(result.current.layout).toEqual([
-      { id: "memo", visible: false },
+      { id: "todo", visible: false },
       { id: "cpu", visible: true },
       { id: "ram", visible: true },
       { id: "network", visible: true },
@@ -99,25 +119,25 @@ describe("useWidgetLayout", () => {
     await waitFor(() => expect(result.current.isLoaded).toBe(true));
 
     act(() => {
-      result.current.moveWidget("memo", "cpu", "before");
+      result.current.moveWidget("todo", "cpu", "before");
     });
 
     expect(result.current.layout.map((item) => item.id)).toEqual([
-      "memo",
+      "todo",
       "cpu",
       "ram",
       "network",
     ]);
 
     act(() => {
-      result.current.moveWidget("memo", "network", "after");
+      result.current.moveWidget("todo", "network", "after");
     });
 
     expect(result.current.layout.map((item) => item.id)).toEqual([
       "cpu",
       "ram",
       "network",
-      "memo",
+      "todo",
     ]);
     expect(store.set).toHaveBeenLastCalledWith(
       "widgetLayout",

@@ -19,10 +19,10 @@ describe("HelpPanel", () => {
   it("shows the corresponding markdown when a topic is selected", () => {
     const { getByRole } = render(<HelpPanel />);
 
-    fireEvent.click(getByRole("button", { name: "Memo" }));
+    fireEvent.click(getByRole("button", { name: "TODO" }));
 
-    expect(getByRole("heading", { name: "Memo" })).toBeTruthy();
-    expect(getByRole("heading", { name: "メモを追加する" })).toBeTruthy();
+    expect(getByRole("heading", { name: "TODO" })).toBeTruthy();
+    expect(getByRole("heading", { name: "TODOを追加する" })).toBeTruthy();
   });
 
   it("collapses and reopens the help navigation", () => {
@@ -48,7 +48,7 @@ describe("HelpPanel", () => {
       "window-controls",
       "system-monitor",
       "network-ping",
-      "memo",
+      "todo",
       "shortcuts",
       "layout-editing",
       "settings",

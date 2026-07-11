@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 const STORE_FILE = "settings.json";
 const STORE_KEY = "widgetLayout";
 
-export type WidgetId = "cpu" | "ram" | "network" | "memo";
+export type WidgetId = "cpu" | "ram" | "network" | "todo";
 
 export interface WidgetLayoutItem {
   id: WidgetId;
@@ -15,7 +15,7 @@ export const DEFAULT_WIDGET_LAYOUT: readonly WidgetLayoutItem[] = [
   { id: "cpu", visible: true },
   { id: "ram", visible: true },
   { id: "network", visible: true },
-  { id: "memo", visible: true },
+  { id: "todo", visible: true },
 ];
 
 const DEFAULT_WIDGET_IDS = DEFAULT_WIDGET_LAYOUT.map((item) => item.id);
@@ -26,24 +26,28 @@ function isWidgetId(value: unknown): value is WidgetId {
   );
 }
 
+function normalizeWidgetId(value: unknown): WidgetId | null {
+  if (value === "memo") return "todo";
+  return isWidgetId(value) ? value : null;
+}
+
 function normalizeWidgetLayout(value: unknown): WidgetLayoutItem[] {
   const normalized: WidgetLayoutItem[] = [];
   const seen = new Set<WidgetId>();
 
   if (Array.isArray(value)) {
     for (const item of value) {
-      if (
-        item &&
-        typeof item === "object" &&
-        "id" in item &&
-        isWidgetId(item.id) &&
-        !seen.has(item.id)
-      ) {
+      const id =
+        item && typeof item === "object" && "id" in item
+          ? normalizeWidgetId(item.id)
+          : null;
+
+      if (item && typeof item === "object" && id && !seen.has(id)) {
         normalized.push({
-          id: item.id,
+          id,
           visible: "visible" in item ? item.visible !== false : true,
         });
-        seen.add(item.id);
+        seen.add(id);
       }
     }
   }

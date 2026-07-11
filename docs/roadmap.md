@@ -36,11 +36,11 @@ The following features are already implemented:
 * detailed CPU / RAM history view
 * configurable system usage update interval with a 0.1s minimum
 * actual processor name display
-* memo widget
-* memo add / complete / delete behavior
-* memo tag selection
-* memo list view
-* memo persistence
+* TODO widget
+* TODO add / complete / delete behavior
+* TODO tag selection
+* TODO list view
+* TODO persistence
 * settings panel
 * dark mode / light mode toggle
 * OS theme detection at startup
@@ -113,17 +113,17 @@ Implemented behavior:
 
 ---
 
-## Memo List View
+## TODO List View
 
 Status: implemented
 
 Purpose:
 
-* provide a fuller view of memo items
-* improve usability when many memos exist
+* provide a fuller view of TODO items
+* improve usability when many TODO items exist
 * support filtering by completion state or tag
 
-This should build on the existing memo model rather than replacing it.
+This should build on the existing TODO model rather than replacing it.
 
 ---
 

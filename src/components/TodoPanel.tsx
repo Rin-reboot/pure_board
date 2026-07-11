@@ -1,28 +1,28 @@
-import { ListFilter, Plus, Send, StickyNote } from "lucide-react";
+import { ListFilter, ListTodo, Plus, Send } from "lucide-react";
 import { useState } from "react";
-import { usePersistedMemos } from "../hooks/usePersistedMemos";
-import { MemoListView } from "./MemoListView";
+import { usePersistedTodos } from "../hooks/usePersistedTodos";
+import { TodoListView } from "./TodoListView";
 
 const TAG_PRESETS = ["今日中", "明日", "今週中", "未定"];
 
-export function MemoPanel() {
-  const { memos, setMemos, deleteMemo, isLoaded } = usePersistedMemos();
+export function TodoPanel() {
+  const { todos, setTodos, deleteTodo, isLoaded } = usePersistedTodos();
   const [draft, setDraft] = useState("");
   const [selectedTag, setSelectedTag] = useState(TAG_PRESETS[0]);
   const [isListView, setIsListView] = useState(false);
 
-  const toggleMemo = (id: string) => {
-    setMemos((prev) =>
-      prev.map((memo) =>
-        memo.id === id ? { ...memo, done: !memo.done } : memo,
+  const toggleTodo = (id: string) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo,
       ),
     );
   };
 
-  const addMemo = () => {
+  const addTodo = () => {
     const text = draft.trim();
     if (!text) return;
-    setMemos((prev) => [
+    setTodos((prev) => [
       ...prev,
       { id: crypto.randomUUID(), text, done: false, tag: selectedTag },
     ]);
@@ -30,19 +30,19 @@ export function MemoPanel() {
   };
 
   return (
-    <section className="card memo-card">
-      <div className="memo-header">
-        <span className="memo-title">
-          <StickyNote size={16} style={{ color: "var(--accent-memo)" }} />
-          Memo
+    <section className="card todo-card">
+      <div className="todo-header">
+        <span className="todo-title">
+          <ListTodo size={16} style={{ color: "var(--accent-todo)" }} />
+          TODO
         </span>
-        <div className="memo-header-actions">
-          <button type="button" onClick={addMemo} aria-label="メモを追加">
+        <div className="todo-header-actions">
+          <button type="button" onClick={addTodo} aria-label="TODOを追加">
             <Plus size={14} />
           </button>
           <button
             type="button"
-            className={isListView ? "memo-view-toggle-active" : ""}
+            className={isListView ? "todo-view-toggle-active" : ""}
             onClick={() => setIsListView((current) => !current)}
             aria-pressed={isListView}
             aria-label="リストビューを切り替え"
@@ -53,19 +53,19 @@ export function MemoPanel() {
       </div>
 
       {!isLoaded ? (
-        <p className="memo-loading">読み込み中...</p>
+        <p className="todo-loading">読み込み中...</p>
       ) : (
-        <MemoListView
-          memos={memos}
+        <TodoListView
+          todos={todos}
           isExpanded={isListView}
-          onToggleMemo={toggleMemo}
-          onDeleteMemo={deleteMemo}
+          onToggleTodo={toggleTodo}
+          onDeleteTodo={deleteTodo}
         />
       )}
 
-      <div className="memo-input-row">
+      <div className="todo-input-row">
         <select
-          className="memo-tag-select"
+          className="todo-tag-select"
           value={selectedTag}
           onChange={(e) => setSelectedTag(e.target.value)}
           aria-label="タグを選択"
@@ -78,12 +78,12 @@ export function MemoPanel() {
         </select>
         <input
           type="text"
-          placeholder="メモを入力..."
+          placeholder="TODOを入力..."
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addMemo()}
+          onKeyDown={(e) => e.key === "Enter" && addTodo()}
         />
-        <button type="button" onClick={addMemo} aria-label="送信">
+        <button type="button" onClick={addTodo} aria-label="送信">
           <Send size={14} />
         </button>
       </div>

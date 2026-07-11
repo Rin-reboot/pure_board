@@ -99,7 +99,7 @@ Examples:
 * TitleBar
 * CpuCard
 * RamCard
-* MemoPanel
+* TodoPanel
 * Footer
 
 Components should:
@@ -191,7 +191,7 @@ Persistent user data should be stored using:
 
 Examples include:
 
-* memos
+* TODO items
 * settings
 * user preferences
 

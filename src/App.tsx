@@ -12,13 +12,13 @@ import { CloseActionDialog } from "./components/CloseActionDialog";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
 import { HelpPanel } from "./components/HelpPanel";
-import { MemoPanel } from "./components/MemoPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { ShortcutPanel } from "./components/ShortcutPanel";
 import { SystemHistoryView } from "./components/SystemHistoryView";
 import { TitleBar } from "./components/TitleBar";
+import { TodoPanel } from "./components/TodoPanel";
 import { WidgetFrame } from "./components/WidgetFrame";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useAutoStart } from "./hooks/useAutoStart";
@@ -196,8 +196,8 @@ function App() {
             onMeasurePing={handleMeasurePing}
           />
         );
-      case "memo":
-        return <MemoPanel />;
+      case "todo":
+        return <TodoPanel />;
     }
   };
 
@@ -209,8 +209,8 @@ function App() {
         return "RAM";
       case "network":
         return "Network";
-      case "memo":
-        return "Memo";
+      case "todo":
+        return "TODO";
     }
   };
 

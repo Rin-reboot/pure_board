@@ -1,21 +1,21 @@
 import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { MemoListView } from "./MemoListView";
+import { TodoListView } from "./TodoListView";
 
-const memos = [
-  { id: "memo-1", text: "Review tests", done: false, tag: "today" },
-  { id: "memo-2", text: "Ship release", done: true, tag: "tomorrow" },
-  { id: "memo-3", text: "Plan docs", done: false, tag: "tomorrow" },
+const todos = [
+  { id: "todo-1", text: "Review tests", done: false, tag: "today" },
+  { id: "todo-2", text: "Ship release", done: true, tag: "tomorrow" },
+  { id: "todo-3", text: "Plan docs", done: false, tag: "tomorrow" },
 ];
 
-describe("MemoListView", () => {
-  it("filters memos by completion state", () => {
+describe("TodoListView", () => {
+  it("filters todos by completion state", () => {
     const { container, getByText, queryByText } = render(
-      <MemoListView
-        memos={memos}
+      <TodoListView
+        todos={todos}
         isExpanded={true}
-        onToggleMemo={vi.fn()}
-        onDeleteMemo={vi.fn()}
+        onToggleTodo={vi.fn()}
+        onDeleteTodo={vi.fn()}
       />,
     );
 
@@ -28,13 +28,13 @@ describe("MemoListView", () => {
     expect(queryByText("Ship release")).toBeNull();
   });
 
-  it("filters memos by tag", () => {
+  it("filters todos by tag", () => {
     const { getByRole, getByText, queryByText } = render(
-      <MemoListView
-        memos={memos}
+      <TodoListView
+        todos={todos}
         isExpanded={true}
-        onToggleMemo={vi.fn()}
-        onDeleteMemo={vi.fn()}
+        onToggleTodo={vi.fn()}
+        onDeleteTodo={vi.fn()}
       />,
     );
 
@@ -48,15 +48,15 @@ describe("MemoListView", () => {
     expect(queryByText("Plan docs")).toBeNull();
   });
 
-  it("keeps memo actions available after filtering", () => {
-    const onToggleMemo = vi.fn();
-    const onDeleteMemo = vi.fn();
+  it("keeps todo actions available after filtering", () => {
+    const onToggleTodo = vi.fn();
+    const onDeleteTodo = vi.fn();
     const { getByRole, getByText } = render(
-      <MemoListView
-        memos={memos}
+      <TodoListView
+        todos={todos}
         isExpanded={true}
-        onToggleMemo={onToggleMemo}
-        onDeleteMemo={onDeleteMemo}
+        onToggleTodo={onToggleTodo}
+        onDeleteTodo={onDeleteTodo}
       />,
     );
 
@@ -66,11 +66,11 @@ describe("MemoListView", () => {
     fireEvent.click(getByRole("checkbox"));
     fireEvent.click(
       getByText("Review tests").parentElement?.querySelector(
-        ".memo-delete",
+        ".todo-delete",
       ) as HTMLButtonElement,
     );
 
-    expect(onToggleMemo).toHaveBeenCalledWith("memo-1");
-    expect(onDeleteMemo).toHaveBeenCalledWith("memo-1");
+    expect(onToggleTodo).toHaveBeenCalledWith("todo-1");
+    expect(onDeleteTodo).toHaveBeenCalledWith("todo-1");
   });
 });

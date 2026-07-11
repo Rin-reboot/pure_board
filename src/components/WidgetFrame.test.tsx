@@ -58,8 +58,8 @@ describe("WidgetFrame", () => {
   it("reflects hidden and dragging state", () => {
     const { container, getByLabelText } = render(
       <WidgetFrame
-        id="memo"
-        title="Memo"
+        id="todo"
+        title="TODO"
         isEditMode={true}
         isDragging={true}
         isVisible={false}
@@ -67,7 +67,7 @@ describe("WidgetFrame", () => {
         onToggleVisibility={vi.fn()}
         onDragStart={vi.fn()}
       >
-        <span>Memo widget content</span>
+        <span>TODO widget content</span>
       </WidgetFrame>,
     );
     const slot = container.querySelector(".widget-frame-slot");
@@ -83,10 +83,10 @@ describe("WidgetFrame", () => {
     expect(frame.classList.contains("widget-frame-hidden")).toBe(true);
     expect(frame.style.height).toBe("80px");
     expect(frame.style.top).toBe("12px");
-    expect(getByLabelText("Reorder Memo").getAttribute("aria-grabbed")).toBe(
+    expect(getByLabelText("Reorder TODO").getAttribute("aria-grabbed")).toBe(
       "true",
     );
-    expect(getByLabelText("Show Memo").getAttribute("aria-pressed")).toBe(
+    expect(getByLabelText("Show TODO").getAttribute("aria-pressed")).toBe(
       "true",
     );
   });
