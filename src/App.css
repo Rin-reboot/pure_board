@@ -1343,7 +1343,7 @@ body,
 }
 
 .idea-editor-title:focus,
-.idea-editor-body:focus {
+.idea-editor-body:focus-within {
   border-color: color-mix(in srgb, var(--accent-idea) 70%, white);
   background: var(--idea-editor-surface-hover);
   box-shadow:
@@ -1361,11 +1361,8 @@ body,
 .idea-editor-body {
   min-height: 0;
   flex: 1;
-  padding: 18px;
-  resize: none;
-  font-family: "Cascadia Code", "Consolas", monospace;
-  font-size: 0.88rem;
-  line-height: 1.7;
+  padding: 0;
+  overflow: hidden;
 }
 
 .idea-editor-title::placeholder,
@@ -1374,8 +1371,7 @@ body,
   opacity: 1;
 }
 
-.idea-editor-title:disabled,
-.idea-editor-body:disabled {
+.idea-editor-title:disabled {
   opacity: 0.6;
 }
 

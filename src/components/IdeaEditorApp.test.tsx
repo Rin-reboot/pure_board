@@ -21,7 +21,26 @@ vi.mock("../hooks/usePersistedIdeas", () => ({
 }));
 
 vi.mock("../hooks/useTheme", () => ({
-  useTheme: vi.fn(),
+  useTheme: () => ({ theme: "dark" }),
+}));
+
+vi.mock("./MarkdownEditor", () => ({
+  MarkdownEditor: ({
+    value,
+    onChange,
+    disabled,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    disabled?: boolean;
+  }) => (
+    <textarea
+      aria-label="アイデアの本文"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      disabled={disabled}
+    />
+  ),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({

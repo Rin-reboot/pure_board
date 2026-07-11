@@ -10,13 +10,14 @@ import {
   type IdeaChangedPayload,
   type IdeaOpenPayload,
 } from "../ideas/events";
+import { MarkdownEditor } from "./MarkdownEditor";
 
 function getInitialIdeaId(): string | null {
   return new URLSearchParams(window.location.search).get("ideaId");
 }
 
 export function IdeaEditorApp() {
-  useTheme();
+  const { theme } = useTheme();
   const { ideas, isLoaded, errorMessage, saveIdea, removeIdea } =
     usePersistedIdeas();
   const [ideaId, setIdeaId] = useState<string | null>(getInitialIdeaId);
@@ -169,14 +170,11 @@ export function IdeaEditorApp() {
           placeholder="アイデアのタイトル"
           aria-label="アイデアのタイトル"
         />
-        <textarea
-          className="idea-editor-body"
+        <MarkdownEditor
           value={body}
-          onChange={(event) => setBody(event.target.value)}
+          onChange={setBody}
+          theme={theme}
           disabled={isDeleting}
-          placeholder="思いついたことを書いてみましょう..."
-          aria-label="アイデアの本文"
-          spellCheck={false}
         />
         <footer className="idea-editor-footer">
           <span>Markdownで記述できます</span>
