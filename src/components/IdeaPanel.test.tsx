@@ -1,5 +1,11 @@
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IdeaItem } from "../hooks/usePersistedIdeas";
 import { IdeaPanel } from "./IdeaPanel";
 
@@ -7,8 +13,17 @@ const ideaHookMock = vi.hoisted(() => ({
   usePersistedIdeas: vi.fn(),
 }));
 
+const eventMock = vi.hoisted(() => ({
+  listen: vi.fn(),
+  handler: undefined as (() => void) | undefined,
+}));
+
 vi.mock("../hooks/usePersistedIdeas", () => ({
   usePersistedIdeas: ideaHookMock.usePersistedIdeas,
+}));
+
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: eventMock.listen,
 }));
 
 const olderIdea: IdeaItem = {
@@ -31,26 +46,35 @@ function mockIdeas({
   ideas = [],
   isLoaded = true,
   errorMessage = null,
-  createIdea = vi.fn(() => newerIdea),
+  reloadIdeas = vi.fn(),
 }: {
   ideas?: IdeaItem[];
   isLoaded?: boolean;
   errorMessage?: string | null;
-  createIdea?: () => IdeaItem;
+  reloadIdeas?: () => Promise<void>;
 } = {}) {
   ideaHookMock.usePersistedIdeas.mockReturnValue({
     ideas,
     isLoaded,
     errorMessage,
-    createIdea,
+    reloadIdeas,
   });
 
-  return { createIdea };
+  return { reloadIdeas };
 }
+
+beforeEach(() => {
+  eventMock.handler = undefined;
+  eventMock.listen.mockImplementation((_eventName, handler) => {
+    eventMock.handler = handler;
+    return Promise.resolve(vi.fn());
+  });
+});
 
 afterEach(() => {
   cleanup();
   ideaHookMock.usePersistedIdeas.mockReset();
+  eventMock.listen.mockClear();
 });
 
 describe("IdeaPanel", () => {
@@ -91,8 +115,8 @@ describe("IdeaPanel", () => {
     expect(getByText("新しい表示方法")).toBeTruthy();
   });
 
-  it("creates an idea and passes it to the editor callback", () => {
-    const { createIdea } = mockIdeas();
+  it("requests a new idea in the editor", () => {
+    mockIdeas();
     const onCreateIdea = vi.fn();
     const { getByLabelText } = render(
       <IdeaPanel onCreateIdea={onCreateIdea} onOpenIdea={vi.fn()} />,
@@ -100,8 +124,7 @@ describe("IdeaPanel", () => {
 
     fireEvent.click(getByLabelText("新しいアイデアを書き留める"));
 
-    expect(createIdea).toHaveBeenCalledTimes(1);
-    expect(onCreateIdea).toHaveBeenCalledWith(newerIdea);
+    expect(onCreateIdea).toHaveBeenCalledTimes(1);
   });
 
   it("opens an existing idea", () => {
@@ -114,5 +137,15 @@ describe("IdeaPanel", () => {
     fireEvent.click(getByLabelText("アイデア「ウィジェット改善」を開く"));
 
     expect(onOpenIdea).toHaveBeenCalledWith("idea-1");
+  });
+
+  it("reloads the list after an idea changes in the editor", async () => {
+    const { reloadIdeas } = mockIdeas({ ideas: [olderIdea] });
+    render(<IdeaPanel onCreateIdea={vi.fn()} onOpenIdea={vi.fn()} />);
+    await waitFor(() => expect(eventMock.handler).toBeDefined());
+
+    act(() => eventMock.handler?.());
+
+    expect(reloadIdeas).toHaveBeenCalledTimes(1);
   });
 });

@@ -35,6 +35,7 @@ describe("useWidgetLayout", () => {
       { id: "cpu", visible: true },
       { id: "ram", visible: false },
       { id: "network", visible: true },
+      { id: "ideas", visible: true },
     ];
     const store = createStore(savedLayout);
     storeMocks.load.mockResolvedValue(store);
@@ -53,6 +54,7 @@ describe("useWidgetLayout", () => {
       { id: "cpu", visible: true },
       { id: "ram", visible: true },
       { id: "network", visible: true },
+      { id: "ideas", visible: true },
     ]);
     storeMocks.load.mockResolvedValue(store);
 
@@ -80,6 +82,7 @@ describe("useWidgetLayout", () => {
       { id: "cpu", visible: true },
       { id: "ram", visible: true },
       { id: "network", visible: true },
+      { id: "ideas", visible: true },
     ]);
     expect(store.set).toHaveBeenCalledWith(
       "widgetLayout",
@@ -127,6 +130,7 @@ describe("useWidgetLayout", () => {
       "cpu",
       "ram",
       "network",
+      "ideas",
     ]);
 
     act(() => {
@@ -138,6 +142,7 @@ describe("useWidgetLayout", () => {
       "ram",
       "network",
       "todo",
+      "ideas",
     ]);
     expect(store.set).toHaveBeenLastCalledWith(
       "widgetLayout",

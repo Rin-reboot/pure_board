@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { usePersistedIdeas } from "./usePersistedIdeas";
+import { type IdeaItem, usePersistedIdeas } from "./usePersistedIdeas";
 
 interface MockStore {
   get: ReturnType<typeof vi.fn>;
@@ -130,6 +130,33 @@ describe("usePersistedIdeas", () => {
     });
   });
 
+  it("saves an idea before resolving", async () => {
+    const store = createStore([savedIdea]);
+    storeMocks.load.mockResolvedValue(store);
+
+    const { result } = renderHook(() => usePersistedIdeas());
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+
+    let updatedIdea: IdeaItem | undefined;
+    await act(async () => {
+      updatedIdea = await result.current.saveIdea(
+        { title: "保存したアイデア", body: "更新内容" },
+        "idea-1",
+      );
+    });
+
+    expect(updatedIdea).toEqual({
+      ...savedIdea,
+      title: "保存したアイデア",
+      body: "更新内容",
+      updatedAt: "2026-07-11T01:00:00.000Z",
+    });
+    expect(store.set).toHaveBeenCalledWith("ideas", [updatedIdea]);
+    expect(store.save).toHaveBeenCalled();
+  });
+
   it("deletes an idea", async () => {
     const store = createStore([savedIdea]);
     storeMocks.load.mockResolvedValue(store);
@@ -144,6 +171,45 @@ describe("usePersistedIdeas", () => {
     });
 
     expect(result.current.ideas).toEqual([]);
+  });
+
+  it("removes an idea from the store before resolving", async () => {
+    const store = createStore([savedIdea]);
+    storeMocks.load.mockResolvedValue(store);
+
+    const { result } = renderHook(() => usePersistedIdeas());
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+
+    await act(async () => {
+      await result.current.removeIdea("idea-1");
+    });
+
+    expect(result.current.ideas).toEqual([]);
+    expect(store.set).toHaveBeenCalledWith("ideas", []);
+    expect(store.save).toHaveBeenCalled();
+  });
+
+  it("keeps an idea visible when removing it fails", async () => {
+    const store = createStore([savedIdea]);
+    storeMocks.load.mockResolvedValue(store);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { result } = renderHook(() => usePersistedIdeas());
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    store.save.mockRejectedValueOnce(new Error("failed"));
+
+    await act(async () => {
+      await expect(result.current.removeIdea("idea-1")).rejects.toThrow(
+        "failed",
+      );
+    });
+
+    expect(result.current.ideas).toEqual([savedIdea]);
+    expect(result.current.errorMessage).toBe("failed");
   });
 
   it("reloads ideas from the store", async () => {

@@ -1,9 +1,11 @@
+import { listen } from "@tauri-apps/api/event";
 import { ArrowUpRight, Lightbulb, Plus } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { type IdeaItem, usePersistedIdeas } from "../hooks/usePersistedIdeas";
+import { IDEA_CHANGED_EVENT } from "../ideas/events";
 
 interface IdeaPanelProps {
-  onCreateIdea: (idea: IdeaItem) => void;
+  onCreateIdea: () => void;
   onOpenIdea: (id: string) => void;
 }
 
@@ -31,7 +33,7 @@ function getIdeaExcerpt(body: string): string {
 }
 
 export function IdeaPanel({ onCreateIdea, onOpenIdea }: IdeaPanelProps) {
-  const { ideas, isLoaded, errorMessage, createIdea } = usePersistedIdeas();
+  const { ideas, isLoaded, errorMessage, reloadIdeas } = usePersistedIdeas();
   const sortedIdeas = useMemo(
     () =>
       [...ideas].sort(
@@ -41,9 +43,17 @@ export function IdeaPanel({ onCreateIdea, onOpenIdea }: IdeaPanelProps) {
     [ideas],
   );
 
-  const handleCreateIdea = () => {
-    onCreateIdea(createIdea());
-  };
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    void listen(IDEA_CHANGED_EVENT, () => {
+      void reloadIdeas();
+    }).then((stopListening) => {
+      unlisten = stopListening;
+    });
+
+    return () => unlisten?.();
+  }, [reloadIdeas]);
 
   return (
     <section className="card idea-card" aria-label="アイデア">
@@ -55,7 +65,7 @@ export function IdeaPanel({ onCreateIdea, onOpenIdea }: IdeaPanelProps) {
         <button
           type="button"
           className="idea-create"
-          onClick={handleCreateIdea}
+          onClick={onCreateIdea}
           aria-label="新しいアイデアを書き留める"
         >
           <Plus size={14} aria-hidden="true" />

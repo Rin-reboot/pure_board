@@ -1249,6 +1249,198 @@ body,
 }
 
 /* ============================================================
+   Idea Editor window
+   ============================================================ */
+.idea-editor-shell {
+  --idea-editor-bg: #0b1120;
+  --idea-editor-surface: #121c2f;
+  --idea-editor-surface-hover: #18243a;
+  --idea-editor-border: #2a3850;
+  --idea-editor-text: #f1f5f9;
+  --idea-editor-muted: #9aa8bd;
+  --idea-editor-placeholder: #718096;
+
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  background: var(--idea-editor-bg);
+  color: var(--idea-editor-text);
+}
+
+[data-theme="light"] .idea-editor-shell {
+  --idea-editor-bg: #eef2f8;
+  --idea-editor-surface: #ffffff;
+  --idea-editor-surface-hover: #f7f9fc;
+  --idea-editor-border: #d7dfeb;
+  --idea-editor-text: #172033;
+  --idea-editor-muted: #66748a;
+  --idea-editor-placeholder: #8895a8;
+}
+
+.idea-editor-state {
+  align-items: center;
+  justify-content: center;
+  color: var(--idea-editor-muted);
+  font-size: 0.84rem;
+}
+
+.idea-editor-header {
+  display: flex;
+  min-height: 58px;
+  padding: 0 22px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--idea-editor-border);
+  background: var(--idea-editor-surface);
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
+}
+
+.idea-editor-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.idea-editor-heading svg {
+  color: var(--accent-idea);
+}
+
+.idea-editor-save-status {
+  color: var(--idea-editor-muted);
+  font-size: 0.72rem;
+}
+
+.idea-editor-save-error {
+  color: #fca5a5;
+}
+
+.idea-editor-form {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 22px 0;
+  background: var(--idea-editor-bg);
+}
+
+.idea-editor-title,
+.idea-editor-body {
+  width: auto;
+  border: 1px solid var(--idea-editor-border);
+  border-radius: 12px;
+  outline: 0;
+  background: var(--idea-editor-surface);
+  color: var(--idea-editor-text);
+  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.08);
+  transition:
+    border-color var(--motion-duration-fast) ease,
+    box-shadow var(--motion-duration-fast) ease,
+    background-color var(--motion-duration-fast) ease;
+}
+
+.idea-editor-title:focus,
+.idea-editor-body:focus {
+  border-color: color-mix(in srgb, var(--accent-idea) 70%, white);
+  background: var(--idea-editor-surface-hover);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-idea) 18%, transparent),
+    0 12px 32px rgba(2, 6, 23, 0.12);
+}
+
+.idea-editor-title {
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+.idea-editor-body {
+  min-height: 0;
+  flex: 1;
+  padding: 18px;
+  resize: none;
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.idea-editor-title::placeholder,
+.idea-editor-body::placeholder {
+  color: var(--idea-editor-placeholder);
+  opacity: 1;
+}
+
+.idea-editor-title:disabled,
+.idea-editor-body:disabled {
+  opacity: 0.6;
+}
+
+.idea-editor-footer {
+  display: flex;
+  min-height: 58px;
+  margin: 0 -22px;
+  padding: 0 22px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--idea-editor-border);
+  background: var(--idea-editor-surface);
+  color: var(--idea-editor-muted);
+  font-size: 0.72rem;
+}
+
+.idea-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.idea-editor-actions button {
+  display: flex;
+  height: 34px;
+  padding: 0 15px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent-idea) 56%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-idea) 18%, transparent);
+  color: var(--idea-editor-text);
+  cursor: pointer;
+  font-weight: 650;
+  transition:
+    background-color var(--motion-duration-fast) ease,
+    border-color var(--motion-duration-fast) ease,
+    transform var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.idea-editor-actions button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-idea) 28%, transparent);
+  transform: translateY(-1px);
+}
+
+.idea-editor-actions .idea-editor-delete {
+  border-color: color-mix(in srgb, #f87171 45%, transparent);
+  background: color-mix(in srgb, #f87171 10%, transparent);
+  color: #fca5a5;
+}
+
+[data-theme="light"] .idea-editor-actions .idea-editor-delete {
+  color: #b4232c;
+}
+
+.idea-editor-actions .idea-editor-delete:hover:not(:disabled) {
+  background: color-mix(in srgb, #f87171 20%, transparent);
+}
+
+.idea-editor-actions button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+/* ============================================================
    TODO card
    ============================================================ */
 .todo-card {

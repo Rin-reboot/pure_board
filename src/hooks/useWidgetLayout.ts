@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 const STORE_FILE = "settings.json";
 const STORE_KEY = "widgetLayout";
 
-export type WidgetId = "cpu" | "ram" | "network" | "todo";
+export type WidgetId = "cpu" | "ram" | "network" | "todo" | "ideas";
 
 export interface WidgetLayoutItem {
   id: WidgetId;
@@ -16,6 +16,7 @@ export const DEFAULT_WIDGET_LAYOUT: readonly WidgetLayoutItem[] = [
   { id: "ram", visible: true },
   { id: "network", visible: true },
   { id: "todo", visible: true },
+  { id: "ideas", visible: true },
 ];
 
 const DEFAULT_WIDGET_IDS = DEFAULT_WIDGET_LAYOUT.map((item) => item.id);

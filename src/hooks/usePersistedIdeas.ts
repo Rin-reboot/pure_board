@@ -79,6 +79,7 @@ export function usePersistedIdeas() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const storeRef = useRef<Store | null>(null);
+  const ideasRef = useRef<IdeaItem[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,6 +94,7 @@ export function usePersistedIdeas() {
       if (cancelled) return;
 
       setIdeas(initialIdeas);
+      ideasRef.current = initialIdeas;
       setErrorMessage(null);
 
       if (JSON.stringify(initialIdeas) !== JSON.stringify(saved)) {
@@ -106,6 +108,7 @@ export function usePersistedIdeas() {
     init().catch((err) => {
       console.error("Failed to load ideas:", err);
       setIdeas(defaultIdeas);
+      ideasRef.current = defaultIdeas;
       setErrorMessage(getErrorMessage(err));
       setIsLoaded(true);
     });
@@ -142,22 +145,90 @@ export function usePersistedIdeas() {
       updatedAt: timestamp,
     };
 
-    setIdeas((current) => [idea, ...current].slice(0, MAX_IDEAS));
+    setIdeas((current) => {
+      const next = [idea, ...current].slice(0, MAX_IDEAS);
+      ideasRef.current = next;
+      return next;
+    });
     return idea;
   }, []);
 
   const updateIdea = useCallback((id: string, content: IdeaContent) => {
     const updatedAt = new Date().toISOString();
     const normalizedContent = normalizeIdeaContent(content);
-    setIdeas((current) =>
-      current.map((idea) =>
+    setIdeas((current) => {
+      const next = current.map((idea) =>
         idea.id === id ? { ...idea, ...normalizedContent, updatedAt } : idea,
-      ),
-    );
+      );
+      ideasRef.current = next;
+      return next;
+    });
   }, []);
 
   const deleteIdea = useCallback((id: string) => {
-    setIdeas((current) => current.filter((idea) => idea.id !== id));
+    setIdeas((current) => {
+      const next = current.filter((idea) => idea.id !== id);
+      ideasRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const saveIdea = useCallback(
+    async (content: IdeaContent, id?: string): Promise<IdeaItem> => {
+      const store = storeRef.current;
+      if (!store) throw new Error("Ideas are not loaded yet");
+
+      const timestamp = new Date().toISOString();
+      const normalizedContent = normalizeIdeaContent(content);
+      const existing = id
+        ? ideasRef.current.find((idea) => idea.id === id)
+        : undefined;
+      const savedIdea: IdeaItem = existing
+        ? { ...existing, ...normalizedContent, updatedAt: timestamp }
+        : {
+            id: crypto.randomUUID(),
+            ...normalizedContent,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          };
+      const nextIdeas = existing
+        ? ideasRef.current.map((idea) =>
+            idea.id === existing.id ? savedIdea : idea,
+          )
+        : [savedIdea, ...ideasRef.current].slice(0, MAX_IDEAS);
+
+      try {
+        await store.set(STORE_KEY, nextIdeas);
+        await store.save();
+        ideasRef.current = nextIdeas;
+        setIdeas(nextIdeas);
+        setErrorMessage(null);
+        return savedIdea;
+      } catch (err) {
+        console.error("Failed to save idea:", err);
+        setErrorMessage(getErrorMessage(err));
+        throw err;
+      }
+    },
+    [],
+  );
+
+  const removeIdea = useCallback(async (id: string): Promise<void> => {
+    const store = storeRef.current;
+    if (!store) throw new Error("Ideas are not loaded yet");
+
+    const nextIdeas = ideasRef.current.filter((idea) => idea.id !== id);
+    try {
+      await store.set(STORE_KEY, nextIdeas);
+      await store.save();
+      ideasRef.current = nextIdeas;
+      setIdeas(nextIdeas);
+      setErrorMessage(null);
+    } catch (err) {
+      console.error("Failed to remove idea:", err);
+      setErrorMessage(getErrorMessage(err));
+      throw err;
+    }
   }, []);
 
   const reloadIdeas = useCallback(async () => {
@@ -166,7 +237,9 @@ export function usePersistedIdeas() {
 
     try {
       const saved = await store.get<unknown>(STORE_KEY);
-      setIdeas(normalizeIdeas(saved));
+      const reloadedIdeas = normalizeIdeas(saved);
+      ideasRef.current = reloadedIdeas;
+      setIdeas(reloadedIdeas);
       setErrorMessage(null);
     } catch (err) {
       console.error("Failed to reload ideas:", err);
@@ -181,6 +254,8 @@ export function usePersistedIdeas() {
     createIdea,
     updateIdea,
     deleteIdea,
+    saveIdea,
+    removeIdea,
     reloadIdeas,
   };
 }

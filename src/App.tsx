@@ -12,6 +12,7 @@ import { CloseActionDialog } from "./components/CloseActionDialog";
 import { CpuCard } from "./components/CpuCard";
 import { Footer } from "./components/Footer";
 import { HelpPanel } from "./components/HelpPanel";
+import { IdeaPanel } from "./components/IdeaPanel";
 import { NetworkStats } from "./components/NetworkStats";
 import { RamCard } from "./components/RamCard";
 import { SettingsPanel } from "./components/SettingsPanel";
@@ -34,6 +35,7 @@ import { useTheme } from "./hooks/useTheme";
 import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
 import { useUsageHistory } from "./hooks/useUsageHistory";
 import { useWidgetLayout, type WidgetId } from "./hooks/useWidgetLayout";
+import { openIdeaEditor } from "./windows/openIdeaEditor";
 
 const DETAIL_HISTORY_LENGTH = 120;
 const CARD_HISTORY_LENGTH = 40;
@@ -165,6 +167,12 @@ function App() {
     [],
   );
 
+  const handleOpenIdea = useCallback((ideaId?: string) => {
+    void openIdeaEditor(ideaId).catch((err) => {
+      console.error("Failed to open Idea Editor:", err);
+    });
+  }, []);
+
   const renderWidget = (id: WidgetId) => {
     switch (id) {
       case "cpu":
@@ -198,6 +206,13 @@ function App() {
         );
       case "todo":
         return <TodoPanel />;
+      case "ideas":
+        return (
+          <IdeaPanel
+            onCreateIdea={() => handleOpenIdea()}
+            onOpenIdea={handleOpenIdea}
+          />
+        );
     }
   };
 
@@ -211,6 +226,8 @@ function App() {
         return "Network";
       case "todo":
         return "TODO";
+      case "ideas":
+        return "Ideas";
     }
   };
 
