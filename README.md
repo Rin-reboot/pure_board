@@ -1,6 +1,6 @@
 # pure_board
 
-A lightweight, glassmorphism-style desktop dashboard for Windows 11.
+A lightweight, cross-platform productivity dashboard inspired by the glass-style UI of Windows 11.
 
 [日本語](README-ja.md)
 
@@ -41,9 +41,11 @@ A lightweight, glassmorphism-style desktop dashboard for Windows 11.
 - Reorderable and hideable widgets
 - Configurable close behavior
 
-## Platform
+## Platforms
 
-pure_board is designed primarily for Windows 11. Linux can be used as a development environment, but desktop behavior such as transparency, blur, and always-on-top may differ depending on the compositor.
+pure_board is a cross-platform application for Windows 11 and Linux. Its visual design respects the glass-style UI of Windows 11 while remaining useful across supported desktop environments.
+
+Transparency, blur, always-on-top, task tray, and startup behavior may differ by operating system, window system, and compositor. These platform differences are evaluated on the affected environment rather than against Windows as the sole reference. macOS is not currently included in the build matrix or supported-platform claim.
 
 ## Local-first behavior
 

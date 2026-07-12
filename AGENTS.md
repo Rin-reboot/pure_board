@@ -12,7 +12,7 @@ For architectural details, refer to the documentation under `docs/`.
 
 # Project Overview
 
-pure_board is a Windows 11 desktop dashboard built with Tauri 2.
+pure_board is a cross-platform desktop productivity dashboard built with Tauri 2. Its visual design is inspired by and respects the glass-style UI of Windows 11.
 
 The application displays system information such as CPU and RAM usage inside a transparent Glassmorphism-style desktop widget while also providing lightweight productivity features such as persistent memos.
 
@@ -28,11 +28,7 @@ The project prioritizes:
 
 # Target Platform
 
-Primary target:
-
-- Windows 11
-
-Development environments:
+Supported and development environments:
 
 - Windows 11
 - Linux (CachyOS)
@@ -76,7 +72,7 @@ Always inspect the repository and available tooling before making platform-speci
 
 ## Windows
 
-Windows is the source of truth.
+Windows 11 is the visual design reference for the application's glass-style UI, but it is not the sole source of truth for application behavior.
 
 Features involving:
 
@@ -87,13 +83,13 @@ Features involving:
 - task tray
 - startup
 
-should be evaluated primarily on Windows.
+should be evaluated on Windows when a reported issue affects Windows.
 
 ---
 
 ## Linux
 
-Linux is used mainly for development.
+Linux is a supported application and development platform.
 
 Linux behavior may differ because of:
 
@@ -102,7 +98,7 @@ Linux behavior may differ because of:
 - KDE Plasma
 - compositor implementation
 
-Do not modify application logic only to satisfy Linux compositor behavior.
+Evaluate Linux issues on the affected window system and compositor. Distinguish application bugs from platform limitations before modifying application logic.
 
 ---
 
@@ -409,4 +405,4 @@ Never:
 
 # Goal
 
-Produce maintainable, minimal, readable code that matches the existing project style while respecting the project's Windows-first desktop application design.
+Produce maintainable, minimal, readable code that matches the existing project style while preserving its cross-platform direction and Windows 11-inspired glass-style design.
