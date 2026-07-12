@@ -67,9 +67,10 @@ Network speed and Ping are retrieved by Rust commands. Ping uses the OS ping com
 
 ---
 
-# Near-Term Tasks
+# Implemented Feature Notes
 
-These are likely next implementation targets.
+The sections below retain implementation details for completed roadmap items.
+They are not active tasks.
 
 ## Settings Panel
 
@@ -82,15 +83,9 @@ Purpose:
 * allow users to enter custom update intervals with a 0.1s minimum
 * preserve selected settings
 
-Future extensions:
-
-* expose additional runtime preferences
-
-Possible settings:
+Possible future extension:
 
 * graph history length
-* theme preference
-* startup behavior
 
 Implementation should remain simple.
 
@@ -292,6 +287,47 @@ Out of scope:
 The items in this section are ideas, not active plans.
 
 They should not be implemented without explicit approval.
+
+---
+
+## AI Consultation from Idea Editor
+
+Status: proposed
+
+Purpose:
+
+* allow users to consult an AI service or coding agent while developing an idea
+* pass the current idea title and body as consultation context
+* start the consultation from an explicit button in Idea Editor
+
+Possible targets include:
+
+* ChatGPT
+* Codex
+* Claude
+* Claude Code
+
+Expected flow:
+
+* the user selects the AI target
+* the user presses a consultation button in Idea Editor
+* the app shows the content that will be shared and asks for confirmation
+* the selected AI target opens with the idea content as context
+
+Implementation notes:
+
+* browser-based services and locally installed coding agents may require different integration paths
+* prefer supported deep links, official APIs, or focused local commands over UI automation
+* do not send idea content automatically or in the background
+* do not expose or persist API keys, session tokens, or other authentication secrets unnecessarily
+* define content-length limits and clear error handling before implementation
+* keep provider-specific behavior isolated so adding or removing a target does not affect Idea persistence
+
+Out of scope for the initial version:
+
+* automatic background consultation
+* sending all saved ideas at once
+* allowing an AI target to modify or delete saved ideas without explicit user approval
 
 ---
 
