@@ -1,4 +1,5 @@
 import gettingStarted from "./content/getting-started.md?raw";
+import ideas from "./content/ideas.md?raw";
 import layoutEditing from "./content/layout-editing.md?raw";
 import networkPing from "./content/network-ping.md?raw";
 import settings from "./content/settings.md?raw";
@@ -50,6 +51,7 @@ export const HELP_TOPICS = [
     content: networkPing,
   },
   { id: "todo", title: "TODO", category: "機能", content: todo },
+  { id: "ideas", title: "Ideas", category: "機能", content: ideas },
   {
     id: "shortcuts",
     title: "Shortcuts",

@@ -41,6 +41,9 @@ The following features are already implemented:
 * TODO tag selection
 * TODO list view
 * TODO persistence
+* Ideas widget and persistent idea storage
+* separate Idea Editor window
+* Markdown syntax highlighting and autosave
 * settings panel
 * dark mode / light mode toggle
 * OS theme detection at startup

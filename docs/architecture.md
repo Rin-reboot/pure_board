@@ -47,6 +47,8 @@ Operating System
 src/
 ├── components/
 ├── hooks/
+├── ideas/
+├── windows/
 ├── assets/
 ├── styles/
 └── App.tsx
@@ -100,6 +102,9 @@ Examples:
 * CpuCard
 * RamCard
 * TodoPanel
+* IdeaPanel
+* IdeaEditorApp
+* MarkdownEditor
 * Footer
 
 Components should:
@@ -192,6 +197,7 @@ Persistent user data should be stored using:
 Examples include:
 
 * TODO items
+* ideas
 * settings
 * user preferences
 
@@ -250,6 +256,15 @@ Individual widgets should react to the current theme rather than determining it 
 
 Window behavior should remain centralized.
 
+The application uses two frontend window roles:
+
+* `main` renders the dashboard and Ideas list.
+* `idea-editor` renders `IdeaEditorApp` in a separate native window.
+
+`src/windows/openIdeaEditor.ts` owns creation and reuse of the editor window. The frontend entry point selects the correct React tree from the `view` query parameter, and the editor bundle is loaded lazily so CodeMirror is not included in the main-window startup path.
+
+Idea changes are persisted through `usePersistedIdeas` and announced between windows with focused Tauri events. The main window then reloads the Ideas list from the shared store.
+
 Examples include:
 
 * always-on-top
@@ -257,6 +272,7 @@ Examples include:
 * blur
 * resizing
 * startup behavior
+* secondary editor windows
 
 Avoid scattering window-related logic across multiple components.
 

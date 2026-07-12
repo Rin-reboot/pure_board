@@ -171,6 +171,10 @@ should remain as close as possible to native platform behavior.
 
 Avoid implementing custom behavior unless necessary.
 
+The main dashboard keeps its custom transparent, undecorated window. Idea Editor is a separate opaque, decorated native window so long-form text remains readable in both themes.
+
+Idea Editor intercepts a close request only when it needs to finish saving. After persistence succeeds, it destroys the secondary window directly to avoid re-entering the same close-request event. Changes to window capabilities require a full Tauri app restart; frontend hot reload alone does not apply them.
+
 ---
 
 # Task Tray

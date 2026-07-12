@@ -83,6 +83,8 @@ Good examples:
 * CpuCard
 * RamCard
 * TodoPanel
+* IdeaPanel
+* MarkdownEditor
 * TitleBar
 
 Avoid components that perform multiple unrelated tasks.
@@ -150,6 +152,7 @@ Good
 
 * CpuCard
 * TodoPanel
+* IdeaEditorApp
 * useSystemUsage
 
 Avoid

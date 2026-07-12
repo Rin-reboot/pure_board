@@ -25,6 +25,16 @@ describe("HelpPanel", () => {
     expect(getByRole("heading", { name: "TODOを追加する" })).toBeTruthy();
   });
 
+  it("explains how to capture and save ideas", () => {
+    const { getByRole } = render(<HelpPanel />);
+
+    fireEvent.click(getByRole("button", { name: "Ideas" }));
+
+    expect(getByRole("heading", { name: "Ideas" })).toBeTruthy();
+    expect(getByRole("heading", { name: "アイデアを書き留める" })).toBeTruthy();
+    expect(getByRole("heading", { name: "保存" })).toBeTruthy();
+  });
+
   it("collapses and reopens the help navigation", () => {
     const { getByLabelText } = render(<HelpPanel />);
 
@@ -49,6 +59,7 @@ describe("HelpPanel", () => {
       "system-monitor",
       "network-ping",
       "todo",
+      "ideas",
       "shortcuts",
       "layout-editing",
       "settings",
