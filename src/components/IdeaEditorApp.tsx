@@ -1,7 +1,7 @@
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Lightbulb, Save, Trash2 } from "lucide-react";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePersistedIdeas } from "../hooks/usePersistedIdeas";
 import { useTheme } from "../hooks/useTheme";
 import {
@@ -16,6 +16,8 @@ function getInitialIdeaId(): string | null {
   return new URLSearchParams(window.location.search).get("ideaId");
 }
 
+const AUTO_SAVE_DELAY_MS = 700;
+
 export function IdeaEditorApp() {
   const { theme } = useTheme();
   const { ideas, isLoaded, errorMessage, saveIdea, removeIdea } =
@@ -28,16 +30,94 @@ export function IdeaEditorApp() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const titleRef = useRef(title);
+  const bodyRef = useRef(body);
+  const dirtyRef = useRef(false);
+  const savePromiseRef = useRef<Promise<boolean> | null>(null);
+  const saveLatestRef = useRef<(force?: boolean) => Promise<boolean>>(
+    async () => false,
+  );
+  const failedContentRef = useRef<string | null>(null);
+  const isClosingRef = useRef(false);
   const selectedIdea = useMemo(
     () => ideas.find((idea) => idea.id === ideaId),
     [ideaId, ideas],
   );
   const isDirty = title !== savedTitle || body !== savedBody;
+  const contentKey = `${title}\u0000${body}`;
+  titleRef.current = title;
+  bodyRef.current = body;
+  dirtyRef.current = isDirty;
+
+  const saveCurrentIdea = useCallback(
+    (force = false): Promise<boolean> => {
+      if (!isDirty) return Promise.resolve(true);
+      if (!force && failedContentRef.current === contentKey) {
+        return Promise.resolve(false);
+      }
+      if (savePromiseRef.current) return savePromiseRef.current;
+
+      const savingTitle = title;
+      const savingBody = body;
+      const promise = (async () => {
+        setIsSaving(true);
+        setSaveError(null);
+
+        try {
+          const savedIdea = await saveIdea(
+            { title: savingTitle, body: savingBody },
+            ideaId ?? undefined,
+          );
+          setIdeaId(savedIdea.id);
+          setSavedTitle(savedIdea.title);
+          setSavedBody(savedIdea.body);
+          dirtyRef.current =
+            titleRef.current !== savedIdea.title ||
+            bodyRef.current !== savedIdea.body;
+          failedContentRef.current = null;
+          await emitTo<IdeaChangedPayload>("main", IDEA_CHANGED_EVENT, {
+            ideaId: savedIdea.id,
+          }).catch((err) => {
+            console.error("Failed to notify idea change:", err);
+          });
+          return true;
+        } catch (err) {
+          failedContentRef.current = `${savingTitle}\u0000${savingBody}`;
+          setSaveError(err instanceof Error ? err.message : String(err));
+          return false;
+        } finally {
+          setIsSaving(false);
+        }
+      })();
+
+      savePromiseRef.current = promise;
+      void promise.finally(() => {
+        if (savePromiseRef.current === promise) savePromiseRef.current = null;
+      });
+      return promise;
+    },
+    [body, contentKey, ideaId, isDirty, saveIdea, title],
+  );
+  saveLatestRef.current = saveCurrentIdea;
+
+  const destroyEditorWindow = useCallback(() => {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+    const currentWindow = getCurrentWindow();
+
+    window.setTimeout(() => {
+      void currentWindow.destroy().catch((err) => {
+        isClosingRef.current = false;
+        setSaveError(err instanceof Error ? err.message : String(err));
+      });
+    }, 0);
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
 
     if (!ideaId) {
+      failedContentRef.current = null;
       setTitle("");
       setBody("");
       setSavedTitle("");
@@ -47,6 +127,7 @@ export function IdeaEditorApp() {
     }
 
     if (selectedIdea) {
+      failedContentRef.current = null;
       setTitle(selectedIdea.title);
       setBody(selectedIdea.body);
       setSavedTitle(selectedIdea.title);
@@ -58,12 +139,12 @@ export function IdeaEditorApp() {
   useEffect(() => {
     let unlisten: (() => void) | undefined;
 
-    void listen<IdeaOpenPayload>(IDEA_OPEN_EVENT, (event) => {
-      if (
-        isDirty &&
-        !window.confirm("未保存の変更があります。別のアイデアを開きますか？")
-      ) {
-        return;
+    void listen<IdeaOpenPayload>(IDEA_OPEN_EVENT, async (event) => {
+      if (dirtyRef.current) {
+        const shouldSave = window.confirm(
+          "変更を保存して別のアイデアを開きますか？",
+        );
+        if (!shouldSave || !(await saveLatestRef.current(true))) return;
       }
 
       setIdeaId(event.payload.ideaId);
@@ -72,29 +153,66 @@ export function IdeaEditorApp() {
     });
 
     return () => unlisten?.();
-  }, [isDirty]);
+  }, []);
 
-  const handleSave = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!isDirty || isSaving) return;
-
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      const savedIdea = await saveIdea({ title, body }, ideaId ?? undefined);
-      setIdeaId(savedIdea.id);
-      setSavedTitle(savedIdea.title);
-      setSavedBody(savedIdea.body);
-      await emitTo<IdeaChangedPayload>("main", IDEA_CHANGED_EVENT, {
-        ideaId: savedIdea.id,
-      });
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setIsSaving(false);
+  useEffect(() => {
+    if (
+      !isLoaded ||
+      !isDirty ||
+      isDeleting ||
+      failedContentRef.current === contentKey
+    ) {
+      return;
     }
-  };
+
+    const timer = window.setTimeout(() => {
+      void saveCurrentIdea();
+    }, AUTO_SAVE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [contentKey, isDeleting, isDirty, isLoaded, saveCurrentIdea]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        void saveLatestRef.current(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    const currentWindow = getCurrentWindow();
+
+    void currentWindow
+      .onCloseRequested(async (event) => {
+        event.preventDefault();
+        if (isClosingRef.current) return;
+
+        if (!dirtyRef.current && !savePromiseRef.current) {
+          destroyEditorWindow();
+          return;
+        }
+
+        const shouldSave = window.confirm("変更を保存して閉じますか？");
+        if (!shouldSave) return;
+
+        let saved = await saveLatestRef.current(true);
+        if (saved && dirtyRef.current)
+          saved = await saveLatestRef.current(true);
+        if (!saved || dirtyRef.current) return;
+
+        destroyEditorWindow();
+      })
+      .then((stopListening) => {
+        unlisten = stopListening;
+      });
+
+    return () => unlisten?.();
+  }, [destroyEditorWindow]);
 
   const handleDelete = async () => {
     if (!ideaId || isSaving || isDeleting) return;
@@ -110,7 +228,7 @@ export function IdeaEditorApp() {
     try {
       await removeIdea(ideaId);
       await emitTo<IdeaChangedPayload>("main", IDEA_CHANGED_EVENT, { ideaId });
-      await getCurrentWindow().close();
+      destroyEditorWindow();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
       setIsDeleting(false);
@@ -160,7 +278,10 @@ export function IdeaEditorApp() {
 
       <form
         className="idea-editor-form"
-        onSubmit={(event) => void handleSave(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void saveCurrentIdea(true);
+        }}
       >
         <input
           className="idea-editor-title"

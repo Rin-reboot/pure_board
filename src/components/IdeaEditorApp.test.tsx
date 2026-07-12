@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IdeaItem } from "../hooks/usePersistedIdeas";
 import { IdeaEditorApp } from "./IdeaEditorApp";
@@ -13,7 +19,11 @@ const eventMock = vi.hoisted(() => ({
 }));
 
 const windowMock = vi.hoisted(() => ({
-  close: vi.fn(),
+  destroy: vi.fn(),
+  onCloseRequested: vi.fn(),
+  closeHandler: undefined as
+    | ((event: { preventDefault: () => void }) => Promise<void>)
+    | undefined,
 }));
 
 vi.mock("../hooks/usePersistedIdeas", () => ({
@@ -49,7 +59,10 @@ vi.mock("@tauri-apps/api/event", () => ({
 }));
 
 vi.mock("@tauri-apps/api/window", () => ({
-  getCurrentWindow: () => ({ close: windowMock.close }),
+  getCurrentWindow: () => ({
+    destroy: windowMock.destroy,
+    onCloseRequested: windowMock.onCloseRequested,
+  }),
 }));
 
 const idea: IdeaItem = {
@@ -62,6 +75,12 @@ const idea: IdeaItem = {
 
 beforeEach(() => {
   eventMock.listen.mockResolvedValue(vi.fn());
+  windowMock.destroy.mockResolvedValue(undefined);
+  windowMock.closeHandler = undefined;
+  windowMock.onCloseRequested.mockImplementation((handler) => {
+    windowMock.closeHandler = handler;
+    return Promise.resolve(vi.fn());
+  });
 });
 
 afterEach(() => {
@@ -70,7 +89,9 @@ afterEach(() => {
   ideaHookMock.usePersistedIdeas.mockReset();
   eventMock.emitTo.mockReset();
   eventMock.listen.mockClear();
-  windowMock.close.mockReset();
+  windowMock.destroy.mockReset();
+  windowMock.onCloseRequested.mockReset();
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -143,7 +164,7 @@ describe("IdeaEditorApp", () => {
       removeIdea,
     });
     eventMock.emitTo.mockResolvedValue(undefined);
-    windowMock.close.mockResolvedValue(undefined);
+    windowMock.destroy.mockResolvedValue(undefined);
     vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const { getByRole } = render(<IdeaEditorApp />);
@@ -153,6 +174,113 @@ describe("IdeaEditorApp", () => {
     expect(eventMock.emitTo).toHaveBeenCalledWith("main", "idea:changed", {
       ideaId: "idea-1",
     });
-    expect(windowMock.close).toHaveBeenCalled();
+    await waitFor(() => expect(windowMock.destroy).toHaveBeenCalled());
+  });
+
+  it("automatically saves after editing stops", async () => {
+    vi.useFakeTimers();
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const savedIdea = { ...idea, title: "自動保存する案" };
+    const saveIdea = vi.fn().mockResolvedValue(savedIdea);
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea,
+      removeIdea: vi.fn(),
+    });
+    eventMock.emitTo.mockResolvedValue(undefined);
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    fireEvent.change(getByLabelText("アイデアのタイトル"), {
+      target: { value: "自動保存する案" },
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(700);
+    });
+
+    expect(saveIdea).toHaveBeenCalledWith(
+      { title: "自動保存する案", body: idea.body },
+      "idea-1",
+    );
+  });
+
+  it("saves immediately with Ctrl+S", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const savedIdea = { ...idea, body: "ショートカットで保存" };
+    const saveIdea = vi.fn().mockResolvedValue(savedIdea);
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea,
+      removeIdea: vi.fn(),
+    });
+    eventMock.emitTo.mockResolvedValue(undefined);
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    fireEvent.change(getByLabelText("アイデアの本文"), {
+      target: { value: "ショートカットで保存" },
+    });
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true });
+
+    await waitFor(() =>
+      expect(saveIdea).toHaveBeenCalledWith(
+        { title: idea.title, body: "ショートカットで保存" },
+        "idea-1",
+      ),
+    );
+  });
+
+  it("saves unsaved changes before closing", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const savedIdea = { ...idea, title: "閉じる前に保存" };
+    const saveIdea = vi.fn().mockResolvedValue(savedIdea);
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea,
+      removeIdea: vi.fn(),
+    });
+    eventMock.emitTo.mockResolvedValue(undefined);
+    windowMock.destroy.mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    fireEvent.change(getByLabelText("アイデアのタイトル"), {
+      target: { value: "閉じる前に保存" },
+    });
+    const preventDefault = vi.fn();
+    await act(async () => {
+      await windowMock.closeHandler?.({ preventDefault });
+    });
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(saveIdea).toHaveBeenCalledWith(
+      { title: "閉じる前に保存", body: idea.body },
+      "idea-1",
+    );
+    await waitFor(() => expect(windowMock.destroy).toHaveBeenCalled());
+  });
+
+  it("destroys the window when there are no unsaved changes", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    render(<IdeaEditorApp />);
+    const preventDefault = vi.fn();
+    await act(async () => {
+      await windowMock.closeHandler?.({ preventDefault });
+    });
+
+    expect(preventDefault).toHaveBeenCalled();
+    await waitFor(() => expect(windowMock.destroy).toHaveBeenCalled());
   });
 });

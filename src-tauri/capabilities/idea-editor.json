@@ -5,7 +5,7 @@
   "windows": ["idea-editor"],
   "permissions": [
     "core:default",
-    "core:window:allow-close",
+    "core:window:allow-destroy",
     "store:allow-load",
     "store:allow-get",
     "store:allow-set",
