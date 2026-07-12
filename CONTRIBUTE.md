@@ -4,7 +4,7 @@
 
 Thank you for your interest in contributing to pure_board. Bug reports, feature proposals, documentation improvements, and code contributions are welcome.
 
-pure_board is a Windows-first Tauri application. Please keep changes small, focused, and consistent with the existing architecture.
+pure_board is a cross-platform Tauri application inspired by the glass-style UI of Windows 11. Please keep changes small, focused, and consistent with the existing architecture.
 
 ## Before you start
 
@@ -13,7 +13,7 @@ pure_board is a Windows-first Tauri application. Please keep changes small, focu
 - For small, well-defined fixes, you may open a pull request directly.
 - For larger changes, open an issue first so the approach and scope can be discussed.
 
-When reporting a bug, include the operating system, reproduction steps, expected behavior, actual behavior, and screenshots or logs when useful. For desktop behavior, Windows 11 is the reference platform.
+When reporting a bug, include the operating system, OS version, desktop environment or window system when relevant, reproduction steps, expected behavior, actual behavior, and screenshots or logs when useful. Desktop behavior should be evaluated on the affected supported platform.
 
 ## Development setup
 
@@ -61,7 +61,7 @@ cargo clippy --all-targets -- -D warnings
 cargo test
 ```
 
-Windows 11 is the source of truth for transparency, blur, always-on-top, task tray, startup, and other desktop integration behavior. Linux is also supported as a development environment, but compositor differences should not be treated as application bugs without verification on Windows.
+Windows 11 and Linux are supported platforms. Transparency, blur, always-on-top, task tray, startup, and other desktop integration behavior may vary by operating system, window system, and compositor. Verify issues on the affected environment and distinguish application defects from platform limitations before changing the implementation.
 
 ## Pull requests
 

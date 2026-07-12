@@ -10,7 +10,7 @@ AI agents should not implement features from this document without a direct inst
 
 # Project Direction
 
-pure_board is a Windows 11 desktop dashboard.
+pure_board is a cross-platform desktop productivity dashboard inspired by the glass-style UI of Windows 11.
 
 The project focuses on:
 
@@ -228,8 +228,9 @@ Purpose:
 Target platform:
 
 * Windows 11
+* Linux
 
-Linux behavior should not drive the design unless explicitly requested.
+Platform-specific behavior should be evaluated on the affected environment. Preserve the shared product experience while allowing small, isolated adaptations where desktop APIs or compositor capabilities differ.
 
 Implemented behavior:
 
@@ -251,6 +252,7 @@ Purpose:
 Target platform:
 
 * Windows 11
+* Linux
 
 Implemented using Tauri's autostart plugin.
 

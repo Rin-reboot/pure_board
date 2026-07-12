@@ -2,7 +2,7 @@
 
 This document describes platform-specific behavior and development policies for **pure_board**.
 
-The application targets **Windows 11**, while development may occur on either **Windows 11** or **Linux (CachyOS)**.
+The application supports **Windows 11** and **Linux**. Its visual design is inspired by and respects the glass-style UI of Windows 11.
 
 AI agents should read this document before modifying platform-specific functionality.
 
@@ -10,13 +10,12 @@ AI agents should read this document before modifying platform-specific functiona
 
 # Supported Platforms
 
-## Primary Target
-
 * Windows 11
+* Linux
 
-The application is designed primarily for Windows 11.
+The application is designed as a cross-platform productivity dashboard.
 
-Correct behavior should always be judged against Windows unless a task explicitly targets another platform.
+Correct behavior should be evaluated on the affected supported platform. Windows 11 is the visual reference for the glass-style design, not the sole behavioral reference.
 
 ---
 
@@ -27,7 +26,7 @@ Development may occur on:
 * Windows 11
 * Linux (CachyOS)
 
-Linux is a supported development environment, but it is **not** the reference platform for desktop behavior.
+Both platforms are supported development and application environments. macOS is not currently included in the build matrix or supported-platform claim.
 
 ---
 
@@ -50,9 +49,9 @@ Do not modify application logic before identifying the actual cause.
 
 ---
 
-# Windows Is the Source of Truth
+# Platform-Specific Desktop Behavior
 
-The following features should be evaluated primarily on Windows:
+The following features should be evaluated on each affected platform:
 
 * transparent windows
 * blur effects
@@ -63,13 +62,13 @@ The following features should be evaluated primarily on Windows:
 * window focus
 * native window controls
 
-Differences observed only on Linux should not automatically be treated as bugs.
+Differences between platforms should not automatically be treated as bugs. Determine whether the behavior comes from the application, the operating system, the window system, or the compositor.
 
 ---
 
 # Linux Development
 
-Linux is intended primarily for development.
+Linux is a supported application and development environment.
 
 Most application logic can be implemented and tested on Linux.
 
@@ -81,7 +80,7 @@ However, some desktop features may behave differently depending on:
 * GNOME
 * compositor implementation
 
-These differences should not result in platform-specific workarounds unless explicitly required.
+These differences may require small platform-specific handling when they prevent supported functionality. Keep such handling isolated and verify that it does not regress other platforms.
 
 ---
 
@@ -109,7 +108,7 @@ Some Linux users may still use X11.
 
 Behavior under X11 may differ from Wayland.
 
-Unless the task explicitly targets Linux compatibility, Windows behavior remains the reference.
+Evaluate X11-specific issues on X11 and keep any necessary compatibility logic isolated.
 
 ---
 
@@ -181,9 +180,7 @@ Idea Editor intercepts a close request only when it needs to finish saving. Afte
 
 Task tray functionality is implemented.
 
-Implementation should prioritize Windows behavior.
-
-Platform-specific handling may be introduced when necessary, but only within isolated code paths.
+Implementation should preserve behavior across supported platforms. Platform-specific handling may be introduced when necessary, but only within isolated code paths.
 
 The close button can either exit the app or hide the main window while keeping the app resident in the tray. Users can choose the behavior from Settings.
 
@@ -223,9 +220,9 @@ On Linux:
 
 # Continuous Integration
 
-Windows builds are performed using GitHub Actions.
+Windows and Linux builds are performed using GitHub Actions.
 
-Successful Windows builds provide stronger validation than Linux desktop behavior for platform-specific functionality.
+Windows and Linux builds validate cross-platform buildability. Platform-specific desktop behavior still requires verification on the affected environment.
 
 ---
 
@@ -250,7 +247,7 @@ Determine:
 1. Which operating system is affected?
 2. Which desktop environment is being used?
 3. Which window system is being used?
-4. Can the issue be reproduced on Windows?
+4. Can the issue be reproduced on another supported environment, and is that comparison relevant?
 
 Only after answering these questions should implementation changes be considered.
 
@@ -260,9 +257,10 @@ Only after answering these questions should implementation changes be considered
 
 When working on this repository:
 
-* treat Windows 11 as the reference platform
-* treat Linux primarily as a development environment
-* avoid introducing Linux-specific workarounds without explicit request
+* treat Windows 11 as the visual reference for the glass-style UI
+* treat Windows 11 and Linux as supported platforms
+* evaluate platform-specific issues on the affected environment
+* keep necessary platform-specific handling isolated
 * avoid assuming compositor behavior is controlled by the application
 * preserve cross-platform buildability whenever possible
 
