@@ -1,161 +1,63 @@
 # pure_board
 
-Windows 11 上で動作する、ガラス風デスクトップダッシュボード。
+A lightweight, glassmorphism-style desktop dashboard for Windows 11.
 
-雑多に「あれば嬉しい」機能を兼ね備えたデスクトップアプリとして開発しています。
+[日本語](README-ja.md)
 
-![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri\&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react\&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript\&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-stable-CE422B?logo=rust\&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-stable-CE422B?logo=rust&logoColor=white)
 
----
+## Overview
 
-## 概要
+**pure_board** brings system monitoring and small productivity tools together in a transparent desktop widget. It provides quick access to system activity, TODOs, ideas, and user-defined shortcuts while keeping user data on the local device.
 
-**pure_board** は、雑多に「あれば嬉しい」機能を兼ね備えた、Windows 11 向けのデスクトップダッシュボードアプリです。
+## Features
 
-Windows 11 の壁紙を透過させたガラス風 UI を採用し、システムモニタリング、TODO リスト、アイデア記録をデスクトップからすぐに使える形にまとめています。
+### System monitoring
 
----
+- Real-time CPU and RAM usage
+- CPU waveform and detailed CPU / RAM history views
+- Per-process CPU and memory usage
+- Network upload and download throughput
+- Manual ping measurement with a configurable target
+- Configurable system information update interval
 
-## 主な機能
+### Productivity
 
-* CPU / RAM 使用率のリアルタイム表示
-* CPU 使用率の波形グラフ
-* CPU / RAM 履歴の詳細グラフビュー
-* プロセス別の CPU / メモリ使用量の表示
-* ネットワーク送受信速度の表示
-* 手動 Ping 測定
-* システム情報の更新間隔変更（0.1 秒以上の自由入力）
-* TODO の追加 / 完了チェック / 削除
-* TODO のタグ管理とリストビュー
-* TODO データの永続化
-* Ideas 一覧と独立した Idea Editor ウィンドウ
-* Markdown シンタックスハイライト付きのアイデア編集
-* アイデアの自動保存 / 削除 / 永続化
-* ショートカットボタンの登録と実行
-* ダークモード / ライトモード切り替え
-* 常に最前面に表示の切り替え
-* ウィジェットのドラッグ並び替え
-* ウィジェットの表示 / 非表示切り替え
-* Markdownで管理されたアプリ内ヘルプ
+- Persistent TODOs with completion state, tags, and a filterable list view
+- Persistent ideas with a separate Idea Editor window
+- Markdown syntax highlighting and automatic saving for ideas
+- Up to six configurable shortcuts for URLs, files, folders, and apps
+- In-app help managed with Markdown
 
----
+### Desktop integration
 
-## 技術構成
+- Transparent glassmorphism-style interface
+- Light and dark themes
+- Always-on-top mode
+- Task tray integration and automatic startup
+- Reorderable and hideable widgets
+- Configurable close behavior
 
-| レイヤー          | 採用技術                                                       |
-| ------------- | ---------------------------------------------------------- |
-| シェル           | [Tauri 2](https://tauri.app/)                              |
-| フロントエンド       | React 19 + TypeScript + Vite + CodeMirror 6                |
-| バックエンド        | Rust + [`sysinfo`](https://crates.io/crates/sysinfo)       |
-| 永続化           | [`tauri-plugin-store`](https://v2.tauri.app/plugin/store/) |
-| Lint / Format | [Biome](https://biomejs.dev/)                              |
-| Git Hooks     | [lefthook](https://github.com/evilmartians/lefthook)       |
-| CI            | GitHub Actions                                             |
+## Platform
 
----
+pure_board is designed primarily for Windows 11. Linux can be used as a development environment, but desktop behavior such as transparency, blur, and always-on-top may differ depending on the compositor.
 
-## 対象環境
+## Local-first behavior
 
-主なターゲット環境:
+TODOs, ideas, shortcuts, and preferences are stored locally. Network throughput is measured on the device. Ping is run only when requested by the user and uses the operating system's ping command; it is not sent periodically in the background.
 
-* Windows 11
+## Built with
 
-開発環境:
+- [Tauri 2](https://tauri.app/)
+- React 19 and TypeScript
+- Rust and [`sysinfo`](https://crates.io/crates/sysinfo)
+- [`tauri-plugin-store`](https://v2.tauri.app/plugin/store/)
+- CodeMirror 6
 
-* Windows 11
-* Linux / CachyOS
+## Project links
 
-Windows 向けビルドは Linux 上でクロスコンパイルせず、GitHub Actions の `windows-latest` runner によるネイティブビルドで検証します。
-
-OS ごとの挙動や Wayland 環境での注意点は [`docs/windows.md`](docs/windows.md) を参照してください。
-
----
-
-## セットアップ
-
-```bash
-pnpm install
-pnpm tauri dev
-```
-
-`pnpm install` 実行時に `lefthook install` が走り、以後のコミット時に Biome による整形が自動適用されます。
-
----
-
-## コマンド
-
-### Frontend / App
-
-```bash
-pnpm lint
-pnpm lint:fix
-pnpm typecheck
-pnpm test
-```
-
-### Rust
-
-```bash
-cd src-tauri
-cargo fmt
-cargo clippy --all-targets -- -D warnings
-```
-
----
-
-## ディレクトリ構成
-
-```text
-src/
-├── components/   # UI パーツ
-├── hooks/        # React hooks
-└── App.tsx
-
-src-tauri/
-├── src/lib.rs    # Tauri commands
-└── capabilities/ # Tauri 権限設定
-```
-
-詳細な構成は [`docs/architecture.md`](docs/architecture.md) を参照してください。
-
----
-
-## 実装状況
-
-主な実装済み機能は「主な機能」を参照してください。
-
-### 今後対応予定
-
-未定
-
-詳しいロードマップは [`docs/roadmap.md`](docs/roadmap.md) を参照してください。
-
----
-
-## 補足
-
-ネットワーク速度と Ping は Rust 側で取得します。Ping は OS の ping コマンドを使い、外部サービスへの定期通信を避けるため手動実行のみです。実行先ホストは Settings から変更できます。
-
----
-
-## ドキュメント
-
-| ファイル                                           | 内容                       |
-| ---------------------------------------------- | ------------------------ |
-| [`AGENTS.md`](AGENTS.md)                       | AI エージェント向けの開発ガイド        |
-| [`docs/architecture.md`](docs/architecture.md) | アプリ全体の構成                 |
-| [`docs/development.md`](docs/development.md)   | 開発規約・実装ルール               |
-| [`docs/windows.md`](docs/windows.md)           | Windows / Linux 環境ごとの注意点 |
-| [`docs/roadmap.md`](docs/roadmap.md)           | 今後の実装予定                  |
-| [`docs/ci.md`](docs/ci.md)                     | CI / リリース方針              |
-
----
-
-## 開発方針
-
-pure_board は、軽量で保守しやすい Windows 11 向けデスクトップダッシュボードを目指しています。
-
-大規模なフレームワーク化や複雑なプラグイン機構ではなく、Tauri / React / Rust のシンプルな構成を維持しながら、必要な機能を段階的に追加していきます。
+- [Contributing guide](CONTRIBUTE.md)
+- [Roadmap](docs/roadmap.md)
