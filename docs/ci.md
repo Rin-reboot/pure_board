@@ -6,7 +6,7 @@ GitHub Actions checks pull requests and builds release packages for Windows and 
 
 `.github/workflows/pr.yml` runs the frontend lint, format, type-check, and unit-test commands. It also checks Rust formatting, Clippy warnings, and compilation on Ubuntu.
 
-The workflow additionally builds the Arch Linux package in the official `archlinux:base-devel` container. This verifies the repository-local `PKGBUILD` against current Arch packages before a release is created.
+Distribution packages are not generated during pull request checks. DEB, RPM, AppImage, and Arch packages are all built only by the release workflow, so no Linux distribution receives a separate packaging check on every pull request.
 
 ## Release packages
 
