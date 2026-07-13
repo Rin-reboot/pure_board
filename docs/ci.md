@@ -20,6 +20,8 @@ Pushing a tag matching `v*` runs `.github/workflows/build.yml` and publishes the
 
 Linux DEB, RPM, and AppImage files are built on Ubuntu 22.04 to keep the build baseline stable. The Arch package is compiled separately in an up-to-date Arch Linux container and is intended for rolling-release Arch-family distributions.
 
+The workflow can also be started manually with `workflow_dispatch`. Run it from a `v*` tag so `github.ref_name` identifies the intended release tag; the workflow uses that value as the GitHub Release tag and name.
+
 ## Installing the Arch package
 
 Download the `.pkg.tar.zst` file from the GitHub Release, then install it with pacman:
@@ -28,7 +30,7 @@ Download the `.pkg.tar.zst` file from the GitHub Release, then install it with p
 sudo pacman -U ./pure-board-<version>-1-x86_64.pkg.tar.zst
 ```
 
-This project does not currently publish to the Arch User Repository (AUR). Updates must be downloaded from GitHub Releases and installed explicitly.
+Updates are downloaded from GitHub Releases and installed explicitly.
 
 ## Compatibility limits
 
