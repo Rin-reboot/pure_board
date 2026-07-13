@@ -70,8 +70,10 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          pacman-key --init
+          pacman-key --populate archlinux
           pacman -Syu --noconfirm
-          pacman -S --needed --noconfirm git nodejs pnpm rustup webkit2gtk-4.1 libappindicator-gtk3 librsvg libxdo openssl
+          pacman -S --needed --noconfirm git nodejs pnpm rustup webkit2gtk-4.1 libappindicator-gtk3 librsvg xdotool openssl
           rustup default stable
 
       - name: Build Arch Linux package
