@@ -24,7 +24,7 @@ sha256sums=('SKIP')
 
 build() {
   cd "$startdir/../.."
-  pnpm install --frozen-lockfile
+  LEFTHOOK=0 pnpm install --frozen-lockfile
   pnpm tauri build --no-bundle
 }
 
