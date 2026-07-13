@@ -301,6 +301,10 @@ Do not claim code has been tested when it has not.
 
 Keep commits focused.
 
+Do not commit or push changes directly to `main`.
+
+Create a dedicated branch and submit changes through a pull request.
+
 Avoid:
 
 - formatting-only commits mixed with features

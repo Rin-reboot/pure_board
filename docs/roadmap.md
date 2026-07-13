@@ -292,6 +292,99 @@ They should not be implemented without explicit approval.
 
 ---
 
+## Idea Editor Undo / Redo Shortcuts
+
+Status: proposed
+
+Purpose:
+
+* make editing longer ideas easier with familiar keyboard shortcuts
+* keep editor-specific shortcuts scoped to Idea Editor
+
+Proposed behavior:
+
+* `Ctrl+Z` undoes the latest edit
+* `Ctrl+Shift+Z` redoes the latest undone edit
+* shortcuts operate only while the relevant Idea Editor field has focus
+* shortcuts do not affect the dashboard or other application-level state
+
+Implementation notes:
+
+* verify CodeMirror's existing history and keymap behavior before adding custom handling
+* reuse the editor's native history rather than maintaining a second history in React state
+* confirm expected behavior for both the Markdown body and title field
+* document platform-specific alternatives only if supported, such as `Cmd` shortcuts on macOS
+* add focused tests for shortcut scope, undo order, redo order, and autosave interaction
+
+---
+
+## Export Idea as Markdown
+
+Status: proposed
+
+Purpose:
+
+* allow an idea to be saved as a portable local Markdown file
+* let users reuse or archive idea content outside pure_board
+
+Proposed behavior:
+
+* export the currently open idea through an explicit Idea Editor action
+* suggest a `.md` filename derived from the idea title
+* preserve the Markdown body without silently changing its content
+* save text as UTF-8
+* report cancellation and write errors clearly without changing the stored idea
+
+Implementation notes:
+
+* use a native save dialog and the narrowest required Tauri filesystem capability
+* define how the title is represented in the exported file before implementation
+* sanitize suggested filenames while allowing the user to choose the final path
+* keep export separate from the existing local persistence and autosave flow
+
+Out of scope for the initial version:
+
+* importing Markdown files
+* synchronizing an exported file with later edits
+* bulk export of all ideas
+
+---
+
+## Git / GitHub Integration for Ideas
+
+Status: exploratory
+
+Purpose:
+
+* explore ways to connect Idea Editor content with Git or GitHub workflows
+
+The concrete user workflow has not been decided. Requirements should be defined before implementation.
+
+Questions to resolve:
+
+* whether integration targets a local Git repository, GitHub, or both
+* whether the main action is exporting files, committing changes, creating issues, or another focused workflow
+* how users select a repository, branch, destination path, and GitHub account
+* which actions require preview and explicit confirmation
+* how authentication, offline use, conflicts, and failures are handled
+
+Implementation constraints:
+
+* do not expose arbitrary shell command execution
+* do not store access tokens or GitHub credentials in the idea store
+* prefer established Git and GitHub authentication mechanisms
+* show the exact content and destination before any remote write
+* keep Git / GitHub failures from affecting local idea persistence
+* request only the minimum repository and GitHub permissions required by the chosen workflow
+
+Out of scope until requirements are approved:
+
+* automatic commits or pushes
+* background synchronization
+* creating or modifying remote GitHub content without explicit user confirmation
+
+---
+
 ## AI Consultation from Idea Editor
 
 Status: proposed
