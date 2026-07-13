@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=pure_board
+Comment=Lightweight desktop productivity dashboard
+Exec=pure-board
+Icon=pure-board
+Terminal=false
+Categories=Utility;

@@ -45,6 +45,8 @@ A lightweight, cross-platform productivity dashboard inspired by the glass-style
 
 pure_board is a cross-platform application for Windows 11 and Linux. Its visual design respects the glass-style UI of Windows 11 while remaining useful across supported desktop environments.
 
+GitHub Releases provide Windows installers and x86_64 Linux packages in DEB, RPM, AppImage, and Arch Linux (`.pkg.tar.zst`) formats. The Arch package can be installed on Arch-family distributions such as CachyOS with `sudo pacman -U <package-file>`; it is not currently published to the AUR.
+
 Transparency, blur, always-on-top, task tray, and startup behavior may differ by operating system, window system, and compositor. These platform differences are evaluated on the affected environment rather than against Windows as the sole reference. macOS is not currently included in the build matrix or supported-platform claim.
 
 ## Local-first behavior
@@ -62,4 +64,5 @@ TODOs, ideas, shortcuts, and preferences are stored locally. Network throughput 
 ## Project links
 
 - [Contributing guide](CONTRIBUTE.md)
+- [CI and release builds](docs/ci.md)
 - [Roadmap](docs/roadmap.md)

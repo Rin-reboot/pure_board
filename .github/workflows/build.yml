@@ -14,7 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest]
+        include:
+          - platform: ubuntu-22.04
+            bundles: deb,rpm,appimage
+          - platform: windows-latest
+            bundles: msi,nsis
 
     runs-on: ${{ matrix.platform }}
 
@@ -22,10 +26,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -53,3 +57,31 @@ jobs:
           releaseBody: "See the assets below to download this version."
           releaseDraft: false
           prerelease: false
+          args: --bundles ${{ matrix.bundles }}
+
+  arch-package:
+    name: Arch Linux package
+    needs: build
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm git nodejs pnpm rustup webkit2gtk-4.1 libappindicator-gtk3 librsvg libxdo openssl
+          rustup default stable
+
+      - name: Build Arch Linux package
+        run: |
+          useradd --create-home builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- bash -lc 'cd "$GITHUB_WORKSPACE/packaging/arch" && makepkg --clean --cleanbuild --noconfirm'
+
+      - name: Upload package to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: packaging/arch/*.pkg.tar.zst

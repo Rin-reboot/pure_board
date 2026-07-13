@@ -1,0 +1,36 @@
+pkgname=pure-board
+pkgver="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' ../../src-tauri/tauri.conf.json | head -n 1)"
+pkgrel=1
+pkgdesc="Lightweight desktop productivity dashboard"
+arch=('x86_64')
+url="https://github.com/Rin-reboot/pure_board"
+license=('custom')
+depends=(
+  'cairo'
+  'desktop-file-utils'
+  'gdk-pixbuf2'
+  'glib2'
+  'gtk3'
+  'hicolor-icon-theme'
+  'libappindicator-gtk3'
+  'libsoup3'
+  'pango'
+  'webkit2gtk-4.1'
+)
+makedepends=('cargo' 'nodejs' 'pnpm')
+options=('!strip')
+source=('pure-board.desktop')
+sha256sums=('SKIP')
+
+build() {
+  cd "$startdir/../.."
+  pnpm install --frozen-lockfile
+  pnpm tauri build --no-bundle
+}
+
+package() {
+  cd "$startdir/../.."
+  install -Dm755 "src-tauri/target/release/pure_board" "$pkgdir/usr/bin/pure-board"
+  install -Dm644 "packaging/arch/pure-board.desktop" "$pkgdir/usr/share/applications/pure-board.desktop"
+  install -Dm644 "src-tauri/icons/128x128.png" "$pkgdir/usr/share/icons/hicolor/128x128/apps/pure-board.png"
+}

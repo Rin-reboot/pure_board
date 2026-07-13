@@ -59,3 +59,22 @@ jobs:
 
       - name: Build check
         run: cargo build --manifest-path src-tauri/Cargo.toml
+
+  arch-package:
+    name: Arch Linux package
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm git nodejs pnpm rustup webkit2gtk-4.1 libappindicator-gtk3 librsvg libxdo openssl
+          rustup default stable
+
+      - name: Build package
+        run: |
+          useradd --create-home builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- bash -lc 'cd "$GITHUB_WORKSPACE/packaging/arch" && makepkg --clean --cleanbuild --noconfirm'
