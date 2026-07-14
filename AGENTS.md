@@ -301,6 +301,8 @@ Do not claim code has been tested when it has not.
 
 Keep commits focused.
 
+Always prefix commit messages with an appropriate type, such as `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, or `ci:`.
+
 Do not commit or push changes directly to `main`.
 
 Create a dedicated branch and submit changes through a pull request.
@@ -310,6 +312,14 @@ Avoid:
 - formatting-only commits mixed with features
 - unrelated file modifications
 - large-scale renames without request
+
+## Pull Request Descriptions
+
+Pull request descriptions should focus exclusively on the contents of the pull request.
+
+- Describe the changes and their purpose in detail.
+- Do not mention unsuccessful attempts or problems encountered in the local development environment.
+- Resolve local development issues through conversation before creating the pull request.
 
 ---
 
