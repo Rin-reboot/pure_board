@@ -44,6 +44,7 @@ The following features are already implemented:
 * Ideas widget and persistent idea storage
 * separate Idea Editor window
 * Markdown syntax highlighting and autosave
+* Idea Editor undo / redo shortcuts
 * settings panel
 * dark mode / light mode toggle
 * OS theme detection at startup
@@ -284,37 +285,34 @@ Out of scope:
 
 ---
 
-# Future Ideas
-
-The items in this section are ideas, not active plans.
-
-They should not be implemented without explicit approval.
-
----
-
 ## Idea Editor Undo / Redo Shortcuts
 
-Status: proposed
+Status: implemented
 
 Purpose:
 
 * make editing longer ideas easier with familiar keyboard shortcuts
 * keep editor-specific shortcuts scoped to Idea Editor
 
-Proposed behavior:
+Implemented behavior:
 
-* `Ctrl+Z` undoes the latest edit
-* `Ctrl+Shift+Z` redoes the latest undone edit
-* shortcuts operate only while the relevant Idea Editor field has focus
-* shortcuts do not affect the dashboard or other application-level state
+* `Ctrl+Z` undoes the latest edit in the focused title or Markdown body field
+* `Ctrl+Shift+Z` redoes the latest undone edit on Windows and Linux
+* the title uses the WebView's native input history
+* the Markdown body uses CodeMirror's native history with its 100-event minimum depth and 500 ms grouping delay
+* title and body history is discarded when another idea is opened, including reopening the same idea
+* externally loaded content is not added to the Markdown body history
+* undo and redo changes participate in the existing autosave flow
+* title and body input is rejected beyond the persisted 200 and 200,000 character limits
+* history remains in frontend memory only and is not persisted across editor sessions
 
-Implementation notes:
+---
 
-* verify CodeMirror's existing history and keymap behavior before adding custom handling
-* reuse the editor's native history rather than maintaining a second history in React state
-* confirm expected behavior for both the Markdown body and title field
-* document platform-specific alternatives only if supported, such as `Cmd` shortcuts on macOS
-* add focused tests for shortcut scope, undo order, redo order, and autosave interaction
+# Future Ideas
+
+The items in this section are ideas, not active plans.
+
+They should not be implemented without explicit approval.
 
 ---
 

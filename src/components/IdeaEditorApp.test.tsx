@@ -16,6 +16,9 @@ const ideaHookMock = vi.hoisted(() => ({
 const eventMock = vi.hoisted(() => ({
   emitTo: vi.fn(),
   listen: vi.fn().mockResolvedValue(vi.fn()),
+  openHandler: undefined as
+    | ((event: { payload: { ideaId: string | null } }) => Promise<void>)
+    | undefined,
 }));
 
 const windowMock = vi.hoisted(() => ({
@@ -27,6 +30,8 @@ const windowMock = vi.hoisted(() => ({
 }));
 
 vi.mock("../hooks/usePersistedIdeas", () => ({
+  MAX_IDEA_BODY_LENGTH: 200_000,
+  MAX_IDEA_TITLE_LENGTH: 200,
   usePersistedIdeas: ideaHookMock.usePersistedIdeas,
 }));
 
@@ -39,16 +44,19 @@ vi.mock("./MarkdownEditor", () => ({
     value,
     onChange,
     disabled,
+    maxLength,
   }: {
     value: string;
     onChange: (value: string) => void;
     disabled?: boolean;
+    maxLength?: number;
   }) => (
     <textarea
       aria-label="アイデアの本文"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
+      maxLength={maxLength}
     />
   ),
 }));
@@ -74,7 +82,11 @@ const idea: IdeaItem = {
 };
 
 beforeEach(() => {
-  eventMock.listen.mockResolvedValue(vi.fn());
+  eventMock.openHandler = undefined;
+  eventMock.listen.mockImplementation((_eventName, handler) => {
+    eventMock.openHandler = handler;
+    return Promise.resolve(vi.fn());
+  });
   windowMock.destroy.mockResolvedValue(undefined);
   windowMock.closeHandler = undefined;
   windowMock.onCloseRequested.mockImplementation((handler) => {
@@ -203,6 +215,128 @@ describe("IdeaEditorApp", () => {
       { title: "自動保存する案", body: idea.body },
       "idea-1",
     );
+  });
+
+  it("does not autosave when undo returns to the saved content", async () => {
+    vi.useFakeTimers();
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const saveIdea = vi.fn();
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea,
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    const body = getByLabelText("アイデアの本文");
+    fireEvent.change(body, { target: { value: "一時的な編集" } });
+    fireEvent.change(body, { target: { value: idea.body } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(700);
+    });
+
+    expect(saveIdea).not.toHaveBeenCalled();
+  });
+
+  it("limits title and body input to the persisted data limits", () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    const title = getByLabelText("アイデアのタイトル");
+    const body = getByLabelText("アイデアの本文");
+    fireEvent.change(title, { target: { value: "a".repeat(201) } });
+
+    expect(title).toHaveProperty("maxLength", 200);
+    expect(title).toHaveProperty("value", "a".repeat(200));
+    expect(body).toHaveProperty("maxLength", 200_000);
+  });
+
+  it("resets both field instances when another idea is opened", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const secondIdea: IdeaItem = {
+      ...idea,
+      id: "idea-2",
+      title: "別のアイデア",
+      body: "別の本文",
+    };
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea, secondIdea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    const originalTitle = getByLabelText("アイデアのタイトル");
+    const originalBody = getByLabelText("アイデアの本文");
+    await waitFor(() => expect(eventMock.openHandler).toBeDefined());
+
+    await act(async () => {
+      await eventMock.openHandler?.({ payload: { ideaId: "idea-2" } });
+    });
+
+    expect(getByLabelText("アイデアのタイトル")).not.toBe(originalTitle);
+    expect(getByLabelText("アイデアの本文")).not.toBe(originalBody);
+    expect(getByLabelText("アイデアのタイトル")).toHaveProperty(
+      "value",
+      "別のアイデア",
+    );
+    expect(getByLabelText("アイデアの本文")).toHaveProperty(
+      "value",
+      "別の本文",
+    );
+  });
+
+  it("resets both field instances when the same idea is reopened", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    const originalTitle = getByLabelText("アイデアのタイトル");
+    const originalBody = getByLabelText("アイデアの本文");
+    await waitFor(() => expect(eventMock.openHandler).toBeDefined());
+
+    await act(async () => {
+      await eventMock.openHandler?.({ payload: { ideaId: "idea-1" } });
+    });
+
+    expect(getByLabelText("アイデアのタイトル")).not.toBe(originalTitle);
+    expect(getByLabelText("アイデアの本文")).not.toBe(originalBody);
+  });
+
+  it("leaves undo and redo shortcuts to the focused title field", () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText } = render(<IdeaEditorApp />);
+    const title = getByLabelText("アイデアのタイトル");
+
+    expect(fireEvent.keyDown(title, { key: "z", ctrlKey: true })).toBe(true);
+    expect(
+      fireEvent.keyDown(title, { key: "z", ctrlKey: true, shiftKey: true }),
+    ).toBe(true);
   });
 
   it("saves immediately with Ctrl+S", async () => {
