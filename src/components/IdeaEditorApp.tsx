@@ -2,7 +2,11 @@ import { emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Lightbulb, Save, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePersistedIdeas } from "../hooks/usePersistedIdeas";
+import {
+  MAX_IDEA_BODY_LENGTH,
+  MAX_IDEA_TITLE_LENGTH,
+  usePersistedIdeas,
+} from "../hooks/usePersistedIdeas";
 import { useTheme } from "../hooks/useTheme";
 import {
   IDEA_CHANGED_EVENT,
@@ -23,6 +27,7 @@ export function IdeaEditorApp() {
   const { ideas, isLoaded, errorMessage, saveIdea, removeIdea } =
     usePersistedIdeas();
   const [ideaId, setIdeaId] = useState<string | null>(getInitialIdeaId);
+  const [editorSessionId, setEditorSessionId] = useState(0);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [savedTitle, setSavedTitle] = useState("");
@@ -148,6 +153,7 @@ export function IdeaEditorApp() {
       }
 
       setIdeaId(event.payload.ideaId);
+      setEditorSessionId((current) => current + 1);
     }).then((stopListening) => {
       unlisten = stopListening;
     });
@@ -284,18 +290,24 @@ export function IdeaEditorApp() {
         }}
       >
         <input
+          key={`title-${editorSessionId}`}
           className="idea-editor-title"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) =>
+            setTitle(event.target.value.slice(0, MAX_IDEA_TITLE_LENGTH))
+          }
           disabled={isDeleting}
+          maxLength={MAX_IDEA_TITLE_LENGTH}
           placeholder="アイデアのタイトル"
           aria-label="アイデアのタイトル"
         />
         <MarkdownEditor
+          key={`body-${editorSessionId}`}
           value={body}
           onChange={setBody}
           theme={theme}
           disabled={isDeleting}
+          maxLength={MAX_IDEA_BODY_LENGTH}
         />
         <footer className="idea-editor-footer">
           <span>Markdownで記述できます</span>
