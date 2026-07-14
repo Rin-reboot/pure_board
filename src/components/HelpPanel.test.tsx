@@ -33,6 +33,7 @@ describe("HelpPanel", () => {
     expect(getByRole("heading", { name: "Ideas" })).toBeTruthy();
     expect(getByRole("heading", { name: "アイデアを書き留める" })).toBeTruthy();
     expect(getByRole("heading", { name: "保存" })).toBeTruthy();
+    expect(getByRole("heading", { name: "Undo / Redo" })).toBeTruthy();
   });
 
   it("collapses and reopens the help navigation", () => {

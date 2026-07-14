@@ -17,8 +17,8 @@ export interface IdeaContent {
 const STORE_FILE = "ideas.json";
 const STORE_KEY = "ideas";
 const MAX_IDEAS = 500;
-const MAX_IDEA_TITLE_LENGTH = 200;
-const MAX_IDEA_BODY_LENGTH = 200_000;
+export const MAX_IDEA_TITLE_LENGTH = 200;
+export const MAX_IDEA_BODY_LENGTH = 200_000;
 
 const defaultIdeas: IdeaItem[] = [];
 

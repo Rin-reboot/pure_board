@@ -1,6 +1,8 @@
+import { redo } from "@codemirror/commands";
 import { markdown } from "@codemirror/lang-markdown";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { placeholder } from "@codemirror/view";
+import { EditorState, Transaction } from "@codemirror/state";
+import { keymap, placeholder } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 import { EditorView, minimalSetup } from "codemirror";
 import { useEffect, useRef } from "react";
@@ -11,6 +13,7 @@ interface MarkdownEditorProps {
   onChange: (value: string) => void;
   theme: Theme;
   disabled?: boolean;
+  maxLength?: number;
 }
 
 const darkHighlightStyle = HighlightStyle.define([
@@ -87,6 +90,7 @@ export function MarkdownEditor({
   onChange,
   theme,
   disabled = false,
+  maxLength,
 }: MarkdownEditorProps) {
   const parentRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -104,6 +108,13 @@ export function MarkdownEditor({
       parent,
       extensions: [
         minimalSetup,
+        keymap.of([
+          {
+            key: "Ctrl-Shift-z",
+            run: redo,
+            preventDefault: true,
+          },
+        ]),
         markdown(),
         placeholder("思いついたことを書いてみましょう..."),
         EditorView.lineWrapping,
@@ -112,6 +123,11 @@ export function MarkdownEditor({
           "aria-label": "アイデアの本文",
           "aria-disabled": String(disabled),
         }),
+        EditorState.transactionFilter.of((transaction) =>
+          maxLength === undefined || transaction.newDoc.length <= maxLength
+            ? transaction
+            : [],
+        ),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
@@ -129,7 +145,7 @@ export function MarkdownEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, [disabled, theme]);
+  }, [disabled, maxLength, theme]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -137,6 +153,7 @@ export function MarkdownEditor({
 
     view.dispatch({
       changes: { from: 0, to: view.state.doc.length, insert: value },
+      annotations: Transaction.addToHistory.of(false),
     });
   }, [value]);
 
