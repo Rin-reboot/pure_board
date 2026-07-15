@@ -9,9 +9,15 @@ import {
 
 const DEFAULT_TOPIC_ID: HelpTopicId = "getting-started";
 
-export function HelpPanel() {
+interface HelpPanelProps {
+  initialTopicId?: HelpTopicId;
+}
+
+export function HelpPanel({
+  initialTopicId = DEFAULT_TOPIC_ID,
+}: HelpPanelProps) {
   const [selectedTopicId, setSelectedTopicId] =
-    useState<HelpTopicId>(DEFAULT_TOPIC_ID);
+    useState<HelpTopicId>(initialTopicId);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const selectedTopic =
     HELP_TOPICS.find((topic) => topic.id === selectedTopicId) ?? HELP_TOPICS[0];

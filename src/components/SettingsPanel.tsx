@@ -6,6 +6,11 @@ import {
   type ShortcutButton,
   type ShortcutIcon,
 } from "../hooks/useShortcutButtons";
+import {
+  MAX_TRAY_STATUS_INTERVAL_SECONDS,
+  MIN_TRAY_STATUS_INTERVAL_SECONDS,
+  type TrayStatusMetric,
+} from "../hooks/useTrayStatusSettings";
 import { MIN_UPDATE_INTERVAL_MS } from "../hooks/useUpdateIntervalSetting";
 
 interface SettingsPanelProps {
@@ -14,10 +19,17 @@ interface SettingsPanelProps {
   isAutoStartLoaded: boolean;
   pingTargetHost: string;
   shortcutButtons: readonly ShortcutButton[];
+  trayStatusEnabled: boolean;
+  trayStatusIntervalSeconds: number;
+  trayStatusMetric: TrayStatusMetric;
   updateIntervalMs: number;
   onCloseActionPreferenceChange: (value: CloseActionPreference) => void;
   onPingTargetHostChange: (value: string) => void;
   onShortcutButtonsChange: (value: readonly ShortcutButton[]) => void;
+  onOpenTrayStatusHelp: () => void;
+  onTrayStatusEnabledChange: (value: boolean) => void;
+  onTrayStatusIntervalChange: (valueSeconds: number) => void;
+  onTrayStatusMetricChange: (value: TrayStatusMetric) => void;
   onToggleAutoStart: () => void;
   onUpdateIntervalChange: (valueMs: number) => void;
 }
@@ -28,10 +40,17 @@ export function SettingsPanel({
   isAutoStartLoaded,
   pingTargetHost,
   shortcutButtons,
+  trayStatusEnabled,
+  trayStatusIntervalSeconds,
+  trayStatusMetric,
   updateIntervalMs,
   onCloseActionPreferenceChange,
   onPingTargetHostChange,
   onShortcutButtonsChange,
+  onOpenTrayStatusHelp,
+  onTrayStatusEnabledChange,
+  onTrayStatusIntervalChange,
+  onTrayStatusMetricChange,
   onToggleAutoStart,
   onUpdateIntervalChange,
 }: SettingsPanelProps) {
@@ -94,6 +113,81 @@ export function SettingsPanel({
               aria-label="Update interval"
             />
           </div>
+        </div>
+
+        <div className="settings-section">
+          <span className="settings-section-title">Taskbar status</span>
+          <div className="settings-row">
+            <div className="settings-row-copy">
+              <span className="settings-row-label">Show mini graph</span>
+              <span className="settings-row-value">
+                Display system activity in the notification area
+              </span>
+            </div>
+            <button
+              type="button"
+              className={[
+                "settings-switch",
+                trayStatusEnabled ? "settings-switch-active" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label="Show taskbar mini graph"
+              aria-pressed={trayStatusEnabled}
+              onClick={() => onTrayStatusEnabledChange(!trayStatusEnabled)}
+            >
+              <span className="settings-switch-thumb" />
+            </button>
+          </div>
+          <div className="settings-row">
+            <div className="settings-row-copy">
+              <span className="settings-row-label">Metric</span>
+              <span className="settings-row-value">
+                Value drawn by the mini graph
+              </span>
+            </div>
+            <select
+              className="settings-select"
+              value={trayStatusMetric}
+              disabled={!trayStatusEnabled}
+              onChange={(event) =>
+                onTrayStatusMetricChange(event.target.value as TrayStatusMetric)
+              }
+              aria-label="Taskbar status metric"
+            >
+              <option value="cpu">CPU</option>
+              <option value="memory">RAM</option>
+              <option value="network">Network</option>
+            </select>
+          </div>
+          <div className="settings-row">
+            <div className="settings-row-copy">
+              <span className="settings-row-label">Update interval</span>
+              <span className="settings-row-value">
+                1–60 seconds; pauses visually on battery or reduced motion
+              </span>
+            </div>
+            <input
+              className="settings-number-input"
+              type="number"
+              min={MIN_TRAY_STATUS_INTERVAL_SECONDS}
+              max={MAX_TRAY_STATUS_INTERVAL_SECONDS}
+              step={1}
+              value={trayStatusIntervalSeconds}
+              disabled={!trayStatusEnabled}
+              onChange={(event) =>
+                onTrayStatusIntervalChange(Number(event.target.value))
+              }
+              aria-label="Taskbar status update interval"
+            />
+          </div>
+          <button
+            type="button"
+            className="settings-help-link"
+            onClick={onOpenTrayStatusHelp}
+          >
+            How to keep the icon visible in Windows 11
+          </button>
         </div>
 
         <div className="settings-section">

@@ -6,17 +6,24 @@ afterEach(cleanup);
 
 describe("SettingsPanel", () => {
   it("renders the settings title and update interval", () => {
-    const { getByLabelText, getByText } = render(
+    const { getAllByText, getByLabelText, getByText } = render(
       <SettingsPanel
         closeActionPreference="ask"
         isAutoStartEnabled={false}
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -25,10 +32,12 @@ describe("SettingsPanel", () => {
     expect(getByLabelText("Settings")).toBeTruthy();
     expect(getByText("Settings")).toBeTruthy();
     expect(getByText("System")).toBeTruthy();
-    expect(getByText("Network")).toBeTruthy();
+    expect(getAllByText("Network").length).toBeGreaterThan(0);
     expect(getByText("Shortcuts")).toBeTruthy();
     expect(getByText("Application")).toBeTruthy();
-    expect(getByText("Update interval")).toBeTruthy();
+    expect(getAllByText("Update interval")).toHaveLength(2);
+    expect(getByText("Taskbar status")).toBeTruthy();
+    expect(getByText("Show mini graph")).toBeTruthy();
     expect(getByText("Ping target")).toBeTruthy();
     expect(getByText("Launch at startup")).toBeTruthy();
     expect(getByText("Close button behavior")).toBeTruthy();
@@ -40,6 +49,53 @@ describe("SettingsPanel", () => {
     );
   });
 
+  it("updates taskbar status controls and opens their help", () => {
+    const onOpenTrayStatusHelp = vi.fn();
+    const onTrayStatusEnabledChange = vi.fn();
+    const onTrayStatusIntervalChange = vi.fn();
+    const onTrayStatusMetricChange = vi.fn();
+    const { getByLabelText, getByRole } = render(
+      <SettingsPanel
+        closeActionPreference="ask"
+        isAutoStartEnabled={false}
+        isAutoStartLoaded={true}
+        pingTargetHost="8.8.8.8"
+        shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
+        updateIntervalMs={1500}
+        onCloseActionPreferenceChange={vi.fn()}
+        onPingTargetHostChange={vi.fn()}
+        onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={onOpenTrayStatusHelp}
+        onTrayStatusEnabledChange={onTrayStatusEnabledChange}
+        onTrayStatusIntervalChange={onTrayStatusIntervalChange}
+        onTrayStatusMetricChange={onTrayStatusMetricChange}
+        onToggleAutoStart={vi.fn()}
+        onUpdateIntervalChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(getByLabelText("Show taskbar mini graph"));
+    fireEvent.change(getByLabelText("Taskbar status metric"), {
+      target: { value: "memory" },
+    });
+    fireEvent.change(getByLabelText("Taskbar status update interval"), {
+      target: { value: "5" },
+    });
+    fireEvent.click(
+      getByRole("button", {
+        name: "How to keep the icon visible in Windows 11",
+      }),
+    );
+
+    expect(onTrayStatusEnabledChange).toHaveBeenCalledWith(false);
+    expect(onTrayStatusMetricChange).toHaveBeenCalledWith("memory");
+    expect(onTrayStatusIntervalChange).toHaveBeenCalledWith(5);
+    expect(onOpenTrayStatusHelp).toHaveBeenCalledTimes(1);
+  });
+
   it("calls the interval change handler with the entered value in milliseconds", () => {
     const onUpdateIntervalChange = vi.fn();
     const { getByLabelText } = render(
@@ -49,10 +105,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={onUpdateIntervalChange}
       />,
@@ -74,10 +137,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={onPingTargetHostChange}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -99,10 +169,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={onShortcutButtonsChange}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -126,10 +203,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={onToggleAutoStart}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -148,10 +232,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={false}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={vi.fn()}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
@@ -172,10 +263,17 @@ describe("SettingsPanel", () => {
         isAutoStartLoaded={true}
         pingTargetHost="8.8.8.8"
         shortcutButtons={[]}
+        trayStatusEnabled={true}
+        trayStatusIntervalSeconds={1}
+        trayStatusMetric="cpu"
         updateIntervalMs={1500}
         onCloseActionPreferenceChange={onCloseActionPreferenceChange}
         onPingTargetHostChange={vi.fn()}
         onShortcutButtonsChange={vi.fn()}
+        onOpenTrayStatusHelp={vi.fn()}
+        onTrayStatusEnabledChange={vi.fn()}
+        onTrayStatusIntervalChange={vi.fn()}
+        onTrayStatusMetricChange={vi.fn()}
         onToggleAutoStart={vi.fn()}
         onUpdateIntervalChange={vi.fn()}
       />,
