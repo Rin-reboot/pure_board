@@ -13,6 +13,10 @@ const ideaHookMock = vi.hoisted(() => ({
   usePersistedIdeas: vi.fn(),
 }));
 
+const exportMock = vi.hoisted(() => ({
+  exportIdeaAsMarkdown: vi.fn(),
+}));
+
 const eventMock = vi.hoisted(() => ({
   emitTo: vi.fn(),
   listen: vi.fn().mockResolvedValue(vi.fn()),
@@ -37,6 +41,10 @@ vi.mock("../hooks/usePersistedIdeas", () => ({
 
 vi.mock("../hooks/useTheme", () => ({
   useTheme: () => ({ theme: "dark" }),
+}));
+
+vi.mock("../ideas/exportIdeaAsMarkdown", () => ({
+  exportIdeaAsMarkdown: exportMock.exportIdeaAsMarkdown,
 }));
 
 vi.mock("./MarkdownEditor", () => ({
@@ -99,6 +107,7 @@ afterEach(() => {
   cleanup();
   window.history.replaceState({}, "", "/");
   ideaHookMock.usePersistedIdeas.mockReset();
+  exportMock.exportIdeaAsMarkdown.mockReset();
   eventMock.emitTo.mockReset();
   eventMock.listen.mockClear();
   windowMock.destroy.mockReset();
@@ -126,6 +135,118 @@ describe("IdeaEditorApp", () => {
     );
     expect(getByLabelText("アイデアの本文")).toHaveProperty("value", idea.body);
     expect(getByText("保存済み")).toBeTruthy();
+  });
+
+  it("disables file saving while both title and body are empty", () => {
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText, getByRole } = render(<IdeaEditorApp />);
+    const saveFileButton = getByRole("button", { name: "ファイルに保存" });
+
+    expect(saveFileButton).toHaveProperty("disabled", true);
+
+    fireEvent.change(getByLabelText("アイデアの本文"), {
+      target: { value: "本文" },
+    });
+
+    expect(saveFileButton).toHaveProperty("disabled", false);
+  });
+
+  it("keeps file saving disabled for whitespace-only content", () => {
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+
+    const { getByLabelText, getByRole } = render(<IdeaEditorApp />);
+    fireEvent.change(getByLabelText("アイデアのタイトル"), {
+      target: { value: "   " },
+    });
+    fireEvent.change(getByLabelText("アイデアの本文"), {
+      target: { value: "\n\t" },
+    });
+
+    expect(getByRole("button", { name: "ファイルに保存" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+  });
+
+  it("exports the current editor content without saving the idea", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    const saveIdea = vi.fn();
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea,
+      removeIdea: vi.fn(),
+    });
+    exportMock.exportIdeaAsMarkdown.mockResolvedValue("saved");
+
+    const { getByLabelText, getByRole, getByText } = render(<IdeaEditorApp />);
+    fireEvent.change(getByLabelText("アイデアのタイトル"), {
+      target: { value: "未保存のタイトル" },
+    });
+    fireEvent.change(getByLabelText("アイデアの本文"), {
+      target: { value: "未保存の本文" },
+    });
+    fireEvent.click(getByRole("button", { name: "ファイルに保存" }));
+
+    await waitFor(() =>
+      expect(exportMock.exportIdeaAsMarkdown).toHaveBeenCalledWith(
+        "未保存のタイトル",
+        "未保存の本文",
+      ),
+    );
+    expect(saveIdea).not.toHaveBeenCalled();
+    expect(getByText("ファイルに保存しました")).toBeTruthy();
+  });
+
+  it("returns to the save status when export is cancelled", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+    exportMock.exportIdeaAsMarkdown.mockResolvedValue("cancelled");
+
+    const { getByRole, getByText } = render(<IdeaEditorApp />);
+    fireEvent.click(getByRole("button", { name: "ファイルに保存" }));
+
+    await waitFor(() => expect(getByText("保存済み")).toBeTruthy());
+  });
+
+  it("reports an export error", async () => {
+    window.history.replaceState({}, "", "/?view=idea-editor&ideaId=idea-1");
+    ideaHookMock.usePersistedIdeas.mockReturnValue({
+      ideas: [idea],
+      isLoaded: true,
+      errorMessage: null,
+      saveIdea: vi.fn(),
+      removeIdea: vi.fn(),
+    });
+    exportMock.exportIdeaAsMarkdown.mockRejectedValue(new Error("failed"));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const { getByRole, getByText } = render(<IdeaEditorApp />);
+    fireEvent.click(getByRole("button", { name: "ファイルに保存" }));
+
+    await waitFor(() =>
+      expect(getByText("ファイルに保存できませんでした")).toBeTruthy(),
+    );
   });
 
   it("saves changes before notifying the main window", async () => {
