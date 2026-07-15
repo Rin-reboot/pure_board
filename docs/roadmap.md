@@ -45,6 +45,7 @@ The following features are already implemented:
 * separate Idea Editor window
 * Markdown syntax highlighting and autosave
 * Idea Editor undo / redo shortcuts
+* Idea Editor Markdown export
 * settings panel
 * dark mode / light mode toggle
 * OS theme detection at startup
@@ -310,7 +311,7 @@ Implemented behavior:
 
 # Future Ideas
 
-The items in this section are ideas, not active plans.
+Items in this section with a proposed or exploratory status are ideas, not active plans. Implemented sections are retained as behavior records.
 
 They should not be implemented without explicit approval.
 
@@ -318,26 +319,27 @@ They should not be implemented without explicit approval.
 
 ## Export Idea as Markdown
 
-Status: proposed
+Status: implemented
 
 Purpose:
 
 * allow an idea to be saved as a portable local Markdown file
 * let users reuse or archive idea content outside pure_board
 
-Proposed behavior:
+Implemented behavior:
 
 * export the currently open idea through an explicit Idea Editor action
 * suggest a `.md` filename derived from the idea title
 * preserve the Markdown body without silently changing its content
 * save text as UTF-8
-* report cancellation and write errors clearly without changing the stored idea
+* treat cancellation as a no-op and report write errors without changing the stored idea
+* use the title only for the suggested filename, without adding it to the exported body
+* sanitize the suggested filename for Windows and Linux, replacing title whitespace with underscores, while allowing the user to choose the final path
+* export the current editor content, including unsaved changes, without changing Idea persistence or timestamps
 
 Implementation notes:
 
-* use a native save dialog and the narrowest required Tauri filesystem capability
-* define how the title is represented in the exported file before implementation
-* sanitize suggested filenames while allowing the user to choose the final path
+* uses a native save dialog and Idea Editor-scoped Tauri dialog and filesystem permissions
 * keep export separate from the existing local persistence and autosave flow
 
 Out of scope for the initial version:

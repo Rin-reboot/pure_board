@@ -1,6 +1,6 @@
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Lightbulb, Save, Trash2 } from "lucide-react";
+import { Download, Lightbulb, Save, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MAX_IDEA_BODY_LENGTH,
@@ -14,6 +14,7 @@ import {
   type IdeaChangedPayload,
   type IdeaOpenPayload,
 } from "../ideas/events";
+import { exportIdeaAsMarkdown } from "../ideas/exportIdeaAsMarkdown";
 import { MarkdownEditor } from "./MarkdownEditor";
 
 function getInitialIdeaId(): string | null {
@@ -21,6 +22,7 @@ function getInitialIdeaId(): string | null {
 }
 
 const AUTO_SAVE_DELAY_MS = 700;
+type ExportState = "idle" | "exporting" | "saved" | "error";
 
 export function IdeaEditorApp() {
   const { theme } = useTheme();
@@ -34,6 +36,7 @@ export function IdeaEditorApp() {
   const [savedBody, setSavedBody] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [exportState, setExportState] = useState<ExportState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
   const titleRef = useRef(title);
   const bodyRef = useRef(body);
@@ -49,6 +52,7 @@ export function IdeaEditorApp() {
     [ideaId, ideas],
   );
   const isDirty = title !== savedTitle || body !== savedBody;
+  const hasExportContent = title.trim().length > 0 || body.trim().length > 0;
   const contentKey = `${title}\u0000${body}`;
   titleRef.current = title;
   bodyRef.current = body;
@@ -128,6 +132,7 @@ export function IdeaEditorApp() {
       setSavedTitle("");
       setSavedBody("");
       setSaveError(null);
+      setExportState("idle");
       return;
     }
 
@@ -138,6 +143,7 @@ export function IdeaEditorApp() {
       setSavedTitle(selectedIdea.title);
       setSavedBody(selectedIdea.body);
       setSaveError(null);
+      setExportState("idle");
     }
   }, [ideaId, isLoaded, selectedIdea]);
 
@@ -221,7 +227,9 @@ export function IdeaEditorApp() {
   }, [destroyEditorWindow]);
 
   const handleDelete = async () => {
-    if (!ideaId || isSaving || isDeleting) return;
+    if (!ideaId || isSaving || isDeleting || exportState === "exporting") {
+      return;
+    }
     if (
       !window.confirm("このアイデアを削除しますか？この操作は取り消せません。")
     ) {
@@ -238,6 +246,19 @@ export function IdeaEditorApp() {
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
       setIsDeleting(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!hasExportContent || isDeleting || exportState === "exporting") return;
+
+    setExportState("exporting");
+    try {
+      const result = await exportIdeaAsMarkdown(title, body);
+      setExportState(result === "saved" ? "saved" : "idle");
+    } catch (err) {
+      console.error("Failed to export idea as Markdown:", err);
+      setExportState("error");
     }
   };
 
@@ -265,20 +286,28 @@ export function IdeaEditorApp() {
         <span
           className={[
             "idea-editor-save-status",
-            saveError || errorMessage ? "idea-editor-save-error" : "",
+            saveError || errorMessage || exportState === "error"
+              ? "idea-editor-save-error"
+              : "",
           ]
             .filter(Boolean)
             .join(" ")}
         >
-          {isDeleting
-            ? "削除中..."
-            : isSaving
-              ? "保存中..."
-              : saveError || errorMessage
-                ? "保存できませんでした"
-                : isDirty
-                  ? "未保存"
-                  : "保存済み"}
+          {exportState === "exporting"
+            ? "ファイルに保存中..."
+            : exportState === "saved"
+              ? "ファイルに保存しました"
+              : exportState === "error"
+                ? "ファイルに保存できませんでした"
+                : isDeleting
+                  ? "削除中..."
+                  : isSaving
+                    ? "保存中..."
+                    : saveError || errorMessage
+                      ? "保存できませんでした"
+                      : isDirty
+                        ? "未保存"
+                        : "保存済み"}
         </span>
       </header>
 
@@ -293,9 +322,10 @@ export function IdeaEditorApp() {
           key={`title-${editorSessionId}`}
           className="idea-editor-title"
           value={title}
-          onChange={(event) =>
-            setTitle(event.target.value.slice(0, MAX_IDEA_TITLE_LENGTH))
-          }
+          onChange={(event) => {
+            setExportState("idle");
+            setTitle(event.target.value.slice(0, MAX_IDEA_TITLE_LENGTH));
+          }}
           disabled={isDeleting}
           maxLength={MAX_IDEA_TITLE_LENGTH}
           placeholder="アイデアのタイトル"
@@ -304,7 +334,10 @@ export function IdeaEditorApp() {
         <MarkdownEditor
           key={`body-${editorSessionId}`}
           value={body}
-          onChange={setBody}
+          onChange={(value) => {
+            setExportState("idle");
+            setBody(value);
+          }}
           theme={theme}
           disabled={isDeleting}
           maxLength={MAX_IDEA_BODY_LENGTH}
@@ -312,11 +345,21 @@ export function IdeaEditorApp() {
         <footer className="idea-editor-footer">
           <span>Markdownで記述できます</span>
           <div className="idea-editor-actions">
+            <button
+              type="button"
+              disabled={
+                !hasExportContent || isDeleting || exportState === "exporting"
+              }
+              onClick={() => void handleExport()}
+            >
+              <Download size={14} aria-hidden="true" />
+              ファイルに保存
+            </button>
             {ideaId ? (
               <button
                 type="button"
                 className="idea-editor-delete"
-                disabled={isSaving || isDeleting}
+                disabled={isSaving || isDeleting || exportState === "exporting"}
                 onClick={() => void handleDelete()}
               >
                 <Trash2 size={14} aria-hidden="true" />
