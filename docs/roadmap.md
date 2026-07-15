@@ -240,7 +240,8 @@ Implemented behavior:
 * tray icon displays a configurable CPU, RAM, or network mini graph
 * mini-graph updates can be configured from 1 to 60 seconds
 * mini-graph updates pause visually on battery power or reduced motion
-* first-run Help explains how to keep the icon visible on Windows 11
+* a skippable first-run tutorial introduces the tray status feature without navigating away from the dashboard
+* Settings and Help explain how to keep the icon visible on Windows 11
 * left-clicking the tray icon restores the main window
 * the close button can ask every time, exit, or minimize to tray
 * remembered close behavior can be changed from Settings

@@ -4,13 +4,13 @@ import {
   type CSSProperties,
   type PointerEvent,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { CloseActionDialog } from "./components/CloseActionDialog";
 import { CpuCard } from "./components/CpuCard";
+import { FirstRunTutorial } from "./components/FirstRunTutorial";
 import { Footer } from "./components/Footer";
 import { HelpPanel } from "./components/HelpPanel";
 import { IdeaPanel } from "./components/IdeaPanel";
@@ -29,6 +29,7 @@ import {
   type CloseAction,
   useCloseActionPreference,
 } from "./hooks/useCloseActionPreference";
+import { useFirstRunTutorial } from "./hooks/useFirstRunTutorial";
 import { useNetworkUsage } from "./hooks/useNetworkUsage";
 import { usePingTargetSetting } from "./hooks/usePingTargetSetting";
 import { useShortcutButtons } from "./hooks/useShortcutButtons";
@@ -82,8 +83,9 @@ function App() {
     setIntervalSeconds: setTrayStatusIntervalSeconds,
     setIsEnabled: setIsTrayStatusEnabled,
     setMetric: setTrayStatusMetric,
-    shouldShowIntro: shouldShowTrayStatusIntro,
   } = useTrayStatusSettings();
+  const { dismiss: dismissFirstRunTutorial, isOpen: isFirstRunTutorialOpen } =
+    useFirstRunTutorial();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
   const networkUsage = useNetworkUsage(updateIntervalMs);
@@ -115,13 +117,6 @@ function App() {
     () => shortcutButtons.filter((shortcut) => shortcut.target.trim()),
     [shortcutButtons],
   );
-
-  useEffect(() => {
-    if (!shouldShowTrayStatusIntro) return;
-    setInitialHelpTopicId("taskbar-status");
-    setIsSettingsOpen(false);
-    setActiveView("help");
-  }, [shouldShowTrayStatusIntro]);
 
   const handleMeasurePing = useCallback(async () => {
     setIsMeasuringPing(true);
@@ -417,6 +412,9 @@ function App() {
         onToggleShortcuts={() => handleToggleView("shortcuts")}
         onToggleTheme={toggleTheme}
       />
+      {isFirstRunTutorialOpen ? (
+        <FirstRunTutorial onDismiss={() => void dismissFirstRunTutorial()} />
+      ) : null}
     </main>
   );
 }

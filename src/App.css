@@ -2176,6 +2176,147 @@ select:focus-visible {
 }
 
 /* ============================================================
+   First-run tutorial
+   ============================================================ */
+.first-run-tutorial {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background-color: rgba(5, 9, 16, 0.48);
+  backdrop-filter: blur(8px) saturate(115%);
+  -webkit-backdrop-filter: blur(8px) saturate(115%);
+  animation: backdrop-enter var(--motion-duration-base) ease;
+}
+
+.first-run-tutorial-card {
+  width: min(330px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background:
+    linear-gradient(180deg, var(--glass-highlight-soft), transparent 42%),
+    var(--bg-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-panel),
+    inset 0 1px 0 var(--glass-highlight);
+  animation: dialog-enter var(--motion-duration-slow) var(--motion-ease-out);
+}
+
+.first-run-tutorial-header,
+.first-run-tutorial-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.first-run-tutorial-progress {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.first-run-tutorial-skip {
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.first-run-tutorial-skip:hover {
+  color: var(--text-primary);
+}
+
+.first-run-tutorial-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  border-radius: 16px;
+  background-color: var(--active-overlay);
+  color: var(--accent-cpu);
+  box-shadow: inset 0 1px 0 var(--glass-highlight-soft);
+}
+
+.first-run-tutorial-card h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 650;
+}
+
+.first-run-tutorial-card p {
+  min-height: 76px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.first-run-tutorial-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.first-run-tutorial-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--track-subtle);
+  transition:
+    width var(--motion-duration-base) var(--motion-ease-out),
+    background-color var(--motion-duration-base) ease;
+}
+
+.first-run-tutorial-dots span.is-active {
+  width: 18px;
+  border-radius: var(--radius-pill);
+  background-color: var(--accent-cpu);
+}
+
+.first-run-tutorial-actions {
+  min-height: 34px;
+  gap: 8px;
+}
+
+.first-run-tutorial-actions button {
+  min-height: 34px;
+  border-radius: 9px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.first-run-tutorial-secondary {
+  border: 1px solid var(--border-subtle);
+  background-color: var(--surface-input);
+  color: var(--text-primary);
+}
+
+.first-run-tutorial-primary {
+  border: 1px solid transparent;
+  background-color: var(--accent-cpu);
+  color: var(--on-accent);
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(74, 158, 255, 0.2);
+}
+
+.first-run-tutorial-actions button:hover {
+  filter: brightness(1.07);
+}
+
+/* ============================================================
    Close action dialog
    ============================================================ */
 .dialog-backdrop {

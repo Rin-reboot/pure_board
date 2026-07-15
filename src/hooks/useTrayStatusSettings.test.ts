@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 describe("useTrayStatusSettings", () => {
-  it("enables CPU status by default and requests the first-run guide", async () => {
+  it("enables CPU status by default", async () => {
     const store = createStore({});
     mocks.load.mockResolvedValue(store);
 
@@ -67,8 +67,6 @@ describe("useTrayStatusSettings", () => {
     expect(result.current.isEnabled).toBe(true);
     expect(result.current.metric).toBe("cpu");
     expect(result.current.intervalSeconds).toBe(1);
-    expect(result.current.shouldShowIntro).toBe(true);
-    expect(store.set).toHaveBeenCalledWith("trayStatusHelpShown", true);
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith("configure_tray_status", {
         settings: {
@@ -81,10 +79,9 @@ describe("useTrayStatusSettings", () => {
     );
   });
 
-  it("loads saved settings without reopening the first-run guide", async () => {
+  it("loads saved settings", async () => {
     const store = createStore({
       trayStatusEnabled: false,
-      trayStatusHelpShown: true,
       trayStatusIntervalSeconds: 5,
       trayStatusMetric: "network",
     });
@@ -96,14 +93,12 @@ describe("useTrayStatusSettings", () => {
     expect(result.current.isEnabled).toBe(false);
     expect(result.current.metric).toBe("network");
     expect(result.current.intervalSeconds).toBe(5);
-    expect(result.current.shouldShowIntro).toBe(false);
     expect(store.set).not.toHaveBeenCalled();
   });
 
   it("persists setting changes and clamps the interval", async () => {
     const store = createStore({
       trayStatusEnabled: true,
-      trayStatusHelpShown: true,
       trayStatusIntervalSeconds: 1,
       trayStatusMetric: "cpu",
     });
@@ -129,7 +124,6 @@ describe("useTrayStatusSettings", () => {
   it("syncs reduced-motion changes with the backend", async () => {
     const store = createStore({
       trayStatusEnabled: true,
-      trayStatusHelpShown: true,
       trayStatusIntervalSeconds: 2,
       trayStatusMetric: "memory",
     });

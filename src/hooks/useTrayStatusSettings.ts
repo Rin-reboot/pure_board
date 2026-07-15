@@ -6,7 +6,6 @@ const STORE_FILE = "settings.json";
 const ENABLED_KEY = "trayStatusEnabled";
 const METRIC_KEY = "trayStatusMetric";
 const INTERVAL_KEY = "trayStatusIntervalSeconds";
-const HELP_SHOWN_KEY = "trayStatusHelpShown";
 
 export const MIN_TRAY_STATUS_INTERVAL_SECONDS = 1;
 export const MAX_TRAY_STATUS_INTERVAL_SECONDS = 60;
@@ -36,20 +35,17 @@ export function useTrayStatusSettings() {
     DEFAULT_INTERVAL_SECONDS,
   );
   const [isLoaded, setIsLoaded] = useState(false);
-  const [shouldShowIntro, setShouldShowIntro] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
       const store = await load(STORE_FILE, { autoSave: false, defaults: {} });
-      const [savedEnabled, savedMetric, savedInterval, helpShown] =
-        await Promise.all([
-          store.get<unknown>(ENABLED_KEY),
-          store.get<unknown>(METRIC_KEY),
-          store.get<unknown>(INTERVAL_KEY),
-          store.get<unknown>(HELP_SHOWN_KEY),
-        ]);
+      const [savedEnabled, savedMetric, savedInterval] = await Promise.all([
+        store.get<unknown>(ENABLED_KEY),
+        store.get<unknown>(METRIC_KEY),
+        store.get<unknown>(INTERVAL_KEY),
+      ]);
 
       const initialEnabled =
         typeof savedEnabled === "boolean" ? savedEnabled : DEFAULT_ENABLED;
@@ -66,7 +62,6 @@ export function useTrayStatusSettings() {
       setIsEnabledState(initialEnabled);
       setMetricState(initialMetric);
       setIntervalSecondsState(initialInterval);
-      setShouldShowIntro(helpShown !== true);
       setIsLoaded(true);
 
       let shouldSave = false;
@@ -85,17 +80,12 @@ export function useTrayStatusSettings() {
         await store.set(INTERVAL_KEY, initialInterval);
         shouldSave = true;
       }
-      if (helpShown !== true) {
-        await store.set(HELP_SHOWN_KEY, true);
-        shouldSave = true;
-      }
       if (shouldSave) await store.save();
     };
 
     init().catch((err) => {
       console.error("Failed to load tray status settings:", err);
       if (!cancelled) {
-        setShouldShowIntro(true);
         setIsLoaded(true);
       }
     });
@@ -169,6 +159,5 @@ export function useTrayStatusSettings() {
     setIntervalSeconds,
     setIsEnabled,
     setMetric,
-    shouldShowIntro,
   };
 }

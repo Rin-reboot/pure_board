@@ -186,7 +186,7 @@ The close button can either exit the app or hide the main window while keeping t
 
 The tray icon shows a mini graph for the selected CPU, RAM, or network metric. The feature is enabled by default, can be disabled in Settings, and supports an update interval from 1 to 60 seconds. It keeps running while the main window is hidden.
 
-Windows 11 is the priority platform for this feature. Windows controls whether a third-party icon is shown directly in the notification area or inside the hidden-icons overflow, so the app provides first-run help and a persistent Settings link explaining how users can make the icon visible.
+Windows 11 is the priority platform for this feature. Windows controls whether a third-party icon is shown directly in the notification area or inside the hidden-icons overflow, so the skippable first-run tutorial introduces the feature and a persistent Settings link explains how users can make the icon visible.
 
 The graph remains static while the device is running on battery power or while the operating system requests reduced motion. Tooltip and menu values continue to update. On Linux, the icon and context menu are the baseline behavior; tooltip and left-click support may vary by desktop environment.
 
