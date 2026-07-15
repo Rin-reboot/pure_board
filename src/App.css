@@ -2044,6 +2044,12 @@ select:focus-visible {
   border-color: var(--accent-cpu);
 }
 
+.settings-select:disabled,
+.settings-number-input:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .settings-select option {
   background-color: #111827;
   color: #f9fafb;
@@ -2152,6 +2158,21 @@ select:focus-visible {
 .settings-switch-active .settings-switch-thumb {
   background-color: var(--accent-cpu);
   transform: translateX(20px);
+}
+
+.settings-help-link {
+  align-self: flex-start;
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-cpu);
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-help-link:hover {
+  text-decoration: underline;
 }
 
 /* ============================================================

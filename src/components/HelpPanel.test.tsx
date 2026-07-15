@@ -25,6 +25,17 @@ describe("HelpPanel", () => {
     expect(getByRole("heading", { name: "TODOを追加する" })).toBeTruthy();
   });
 
+  it("can open directly on the taskbar status guide", () => {
+    const { getByRole } = render(<HelpPanel initialTopicId="taskbar-status" />);
+
+    expect(
+      getByRole("heading", { name: "タスクバーのミニグラフ" }),
+    ).toBeTruthy();
+    expect(
+      getByRole("heading", { name: "Windows 11で常に表示する" }),
+    ).toBeTruthy();
+  });
+
   it("explains how to capture and save ideas", () => {
     const { getByRole } = render(<HelpPanel />);
 
@@ -58,6 +69,7 @@ describe("HelpPanel", () => {
       "getting-started",
       "window-controls",
       "system-monitor",
+      "taskbar-status",
       "network-ping",
       "todo",
       "ideas",

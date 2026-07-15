@@ -237,9 +237,17 @@ Platform-specific behavior should be evaluated on the affected environment. Pres
 Implemented behavior:
 
 * tray menu provides Open and Quit actions
+* tray icon displays a configurable CPU, RAM, or network mini graph
+* mini-graph updates can be configured from 1 to 60 seconds
+* mini-graph updates pause visually on battery power or reduced motion
+* first-run Help explains how to keep the icon visible on Windows 11
 * left-clicking the tray icon restores the main window
 * the close button can ask every time, exit, or minimize to tray
 * remembered close behavior can be changed from Settings
+
+Future direction:
+
+* allow animated image or GIF-based tray status styles in addition to the current mini graph
 
 ---
 

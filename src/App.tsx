@@ -4,6 +4,7 @@ import {
   type CSSProperties,
   type PointerEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -21,6 +22,7 @@ import { SystemHistoryView } from "./components/SystemHistoryView";
 import { TitleBar } from "./components/TitleBar";
 import { TodoPanel } from "./components/TodoPanel";
 import { WidgetFrame } from "./components/WidgetFrame";
+import type { HelpTopicId } from "./help/helpTopics";
 import { useAlwaysOnTop } from "./hooks/useAlwaysOnTop";
 import { useAutoStart } from "./hooks/useAutoStart";
 import {
@@ -32,6 +34,7 @@ import { usePingTargetSetting } from "./hooks/usePingTargetSetting";
 import { useShortcutButtons } from "./hooks/useShortcutButtons";
 import { useSystemUsage } from "./hooks/useSystemUsage";
 import { useTheme } from "./hooks/useTheme";
+import { useTrayStatusSettings } from "./hooks/useTrayStatusSettings";
 import { useUpdateIntervalSetting } from "./hooks/useUpdateIntervalSetting";
 import { useUsageHistory } from "./hooks/useUsageHistory";
 import { useWidgetLayout, type WidgetId } from "./hooks/useWidgetLayout";
@@ -72,6 +75,15 @@ function App() {
     setShortcutButtons,
   } = useShortcutButtons();
   const { updateIntervalMs, setUpdateIntervalMs } = useUpdateIntervalSetting();
+  const {
+    intervalSeconds: trayStatusIntervalSeconds,
+    isEnabled: isTrayStatusEnabled,
+    metric: trayStatusMetric,
+    setIntervalSeconds: setTrayStatusIntervalSeconds,
+    setIsEnabled: setIsTrayStatusEnabled,
+    setMetric: setTrayStatusMetric,
+    shouldShowIntro: shouldShowTrayStatusIntro,
+  } = useTrayStatusSettings();
   const { layout, moveWidget, toggleWidgetVisibility } = useWidgetLayout();
   const usage = useSystemUsage(updateIntervalMs);
   const networkUsage = useNetworkUsage(updateIntervalMs);
@@ -94,6 +106,8 @@ function App() {
   const [isCloseActionDialogOpen, setIsCloseActionDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
+  const [initialHelpTopicId, setInitialHelpTopicId] =
+    useState<HelpTopicId>("getting-started");
   const [dragState, setDragState] = useState<DragState | null>(null);
   const stackRef = useRef<HTMLDivElement | null>(null);
   const draggingWidgetId = dragState?.id ?? null;
@@ -101,6 +115,13 @@ function App() {
     () => shortcutButtons.filter((shortcut) => shortcut.target.trim()),
     [shortcutButtons],
   );
+
+  useEffect(() => {
+    if (!shouldShowTrayStatusIntro) return;
+    setInitialHelpTopicId("taskbar-status");
+    setIsSettingsOpen(false);
+    setActiveView("help");
+  }, [shouldShowTrayStatusIntro]);
 
   const handleMeasurePing = useCallback(async () => {
     setIsMeasuringPing(true);
@@ -171,6 +192,12 @@ function App() {
     void openIdeaEditor(ideaId).catch((err) => {
       console.error("Failed to open Idea Editor:", err);
     });
+  }, []);
+
+  const handleOpenTrayStatusHelp = useCallback(() => {
+    setInitialHelpTopicId("taskbar-status");
+    setIsSettingsOpen(false);
+    setActiveView("help");
   }, []);
 
   const renderWidget = (id: WidgetId) => {
@@ -316,10 +343,17 @@ function App() {
           isAutoStartLoaded={isAutoStartLoaded}
           pingTargetHost={pingTargetHost}
           shortcutButtons={shortcutButtons}
+          trayStatusEnabled={isTrayStatusEnabled}
+          trayStatusIntervalSeconds={trayStatusIntervalSeconds}
+          trayStatusMetric={trayStatusMetric}
           updateIntervalMs={updateIntervalMs}
           onCloseActionPreferenceChange={setCloseActionPreference}
           onPingTargetHostChange={handlePingTargetHostChange}
           onShortcutButtonsChange={setShortcutButtons}
+          onOpenTrayStatusHelp={handleOpenTrayStatusHelp}
+          onTrayStatusEnabledChange={setIsTrayStatusEnabled}
+          onTrayStatusIntervalChange={setTrayStatusIntervalSeconds}
+          onTrayStatusMetricChange={setTrayStatusMetric}
           onToggleAutoStart={toggleAutoStart}
           onUpdateIntervalChange={setUpdateIntervalMs}
         />
@@ -346,7 +380,7 @@ function App() {
             updateIntervalMs={updateIntervalMs}
           />
         ) : activeView === "help" ? (
-          <HelpPanel />
+          <HelpPanel initialTopicId={initialHelpTopicId} />
         ) : (
           layout
             .filter((widget) => isEditMode || widget.visible)
@@ -375,7 +409,10 @@ function App() {
         isShortcutsOpen={activeView === "shortcuts"}
         theme={theme}
         onToggleHistory={() => handleToggleView("history")}
-        onToggleHelp={() => handleToggleView("help")}
+        onToggleHelp={() => {
+          setInitialHelpTopicId("getting-started");
+          handleToggleView("help");
+        }}
         onToggleEditMode={() => setIsEditMode((prev) => !prev)}
         onToggleShortcuts={() => handleToggleView("shortcuts")}
         onToggleTheme={toggleTheme}
