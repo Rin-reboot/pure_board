@@ -28,7 +28,8 @@ A lightweight, cross-platform productivity dashboard inspired by the glass-style
 
 - Persistent TODOs with completion state, tags, and a filterable list view
 - Persistent ideas with a separate Idea Editor window
-- Markdown syntax highlighting and automatic saving for ideas
+- Markdown syntax highlighting, automatic saving, and undo / redo for ideas
+- Saving the current Idea Editor content as a local Markdown file
 - Up to six configurable shortcuts for URLs, files, folders, and apps
 - In-app help managed with Markdown
 
@@ -64,8 +65,9 @@ TODOs, ideas, shortcuts, and preferences are stored locally. Network throughput 
 - [Tauri 2](https://tauri.app/)
 - React 19 and TypeScript
 - Rust and [`sysinfo`](https://crates.io/crates/sysinfo)
-- [`tauri-plugin-store`](https://v2.tauri.app/plugin/store/)
+- Tauri plugins for local storage, automatic startup, native save dialogs, and filesystem access
 - CodeMirror 6
+- React Markdown
 
 ## Project links
 

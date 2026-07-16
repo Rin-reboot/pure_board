@@ -50,6 +50,7 @@ Frontend:
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm build
 ```
 
 Rust:
@@ -66,12 +67,16 @@ Windows 11 and Linux are supported platforms. Transparency, blur, always-on-top,
 ## Pull requests
 
 - Create a branch from the latest default branch.
+- Do not commit or push changes directly to `main`.
 - Keep each pull request focused on one change.
 - Avoid unrelated refactoring or formatting changes.
 - Add or update tests when behavior changes.
 - Update documentation when user-visible behavior changes.
 - Explain what changed, why it changed, and how it was validated.
+- Keep the pull request description focused on the submitted changes. Do not include unsuccessful local attempts or environment problems.
 - Preserve backward compatibility for persisted user data whenever practical.
+
+Commit messages must start with an appropriate type such as `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, or `ci:`.
 
 ## Development documentation
 

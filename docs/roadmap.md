@@ -1,10 +1,8 @@
 # Roadmap
 
-This document describes planned, proposed, and out-of-scope functionality for **pure_board**.
+This document records implemented milestones, proposed work, and explicit scope limits for **pure_board**.
 
-Roadmap items are not active implementation tasks unless explicitly requested.
-
-AI agents should not implement features from this document without a direct instruction.
+Roadmap entries are passive context. They are not active implementation tasks unless a user explicitly requests them.
 
 ---
 
@@ -14,385 +12,271 @@ pure_board is a cross-platform desktop productivity dashboard inspired by the gl
 
 The project focuses on:
 
-* lightweight system monitoring
-* desktop-resident utility behavior
-* Glassmorphism UI
-* simple productivity widgets
-* local-first user experience
+- lightweight system monitoring
+- desktop-resident utility behavior
+- a transparent Glassmorphism interface
+- simple local productivity tools
+- a small dependency and permission footprint
+- maintainable Windows 11 and Linux support
 
-The application should remain small, practical, and easy to maintain.
+The application should remain practical and incremental rather than becoming a full system manager or cloud service.
 
 ---
 
 # Current Implemented Features
 
-The following features are already implemented:
+## System Monitoring
 
-* transparent Glassmorphism-style window
-* CPU usage circular gauge
-* CPU usage waveform graph
-* RAM usage circular gauge
-* RAM usage display
-* detailed CPU / RAM history view
-* configurable system usage update interval with a 0.1s minimum
-* actual processor name display
-* TODO widget
-* TODO add / complete / delete behavior
-* TODO tag selection
-* TODO list view
-* TODO persistence
-* Ideas widget and persistent idea storage
-* separate Idea Editor window
-* Markdown syntax highlighting and autosave
-* Idea Editor undo / redo shortcuts
-* Idea Editor Markdown export
-* settings panel
-* dark mode / light mode toggle
-* OS theme detection at startup
-* manual theme preference persistence
-* always-on-top toggle
-* widget edit mode
-* widget drag reordering
-* widget visibility toggle
-* shortcut button view
-* close button
+- CPU usage gauge and waveform
+- actual processor name
+- RAM usage gauge, used memory, total memory, and available memory
+- expandable top CPU and memory-consuming process lists
+- detailed CPU / RAM history with current, average, and maximum values
+- real network upload and download throughput from interface byte deltas
+- user-triggered Ping with a configurable target
+- persisted update interval with a 0.1 second minimum
 
----
+## Productivity
 
-# Known Placeholder Values
+- persistent TODOs with add, complete, and delete actions
+- TODO tags and a filterable full-list view
+- persistent Ideas list ordered by update time
+- separate reusable Idea Editor window
+- CodeMirror Markdown syntax highlighting
+- automatic and explicit Idea saving
+- Idea Editor undo / redo shortcuts
+- local Markdown file saving from the current editor content
+- up to six configurable URL, file, folder, or application shortcuts
+- Markdown-powered in-app help
 
-The following values are currently placeholders:
+## Desktop Integration and Customization
 
-None.
-
-Network speed and Ping are retrieved by Rust commands. Ping uses the OS ping command and is measured only when the user presses the Ping button, avoiding periodic traffic to external services.
+- transparent, undecorated Glassmorphism dashboard
+- opaque, decorated Idea Editor window
+- light and dark themes with OS-theme detection and persisted preference
+- always-on-top mode
+- task tray with Open and Quit actions
+- configurable notification-area mini graph for CPU, RAM, or Network
+- skippable first-run tutorial with persisted completion state
+- configurable close behavior
+- launch-at-login setting
+- widget edit mode
+- drag reordering and visibility controls
+- persisted widget layout
 
 ---
 
 # Implemented Feature Notes
 
-The sections below retain implementation details for completed roadmap items.
-They are not active tasks.
+The sections below record current behavior for features that began as roadmap work. They are not pending tasks.
 
 ## Settings Panel
 
 Status: implemented
 
-Purpose:
+Settings currently manages:
 
-* provide a place for runtime preferences
-* show the current system usage update interval
-* allow users to enter custom update intervals with a 0.1s minimum
-* preserve selected settings
+- system and network polling interval
+- manual Ping target
+- taskbar mini-graph visibility, metric, and update interval
+- six configurable shortcut slots
+- launch at startup
+- close button behavior
+
+Settings values are stored locally where appropriate. The update interval is clamped to a 0.1 second minimum.
 
 Possible future extension:
 
-* graph history length
-
-Implementation should remain simple.
-
----
+- configurable graph history length
 
 ## Widget Edit Mode
 
 Status: implemented
 
-Purpose:
+- toggled from the Footer edit button
+- shows hidden widgets while editing
+- reorders widgets through a drag handle
+- toggles visibility per widget
+- persists order and visibility in `settings.json`
+- disables the main-window drag region while editing
+- normalizes the legacy `memo` widget identifier to `todo`
 
-* allow users to customize visible widgets
-* allow widget order changes
-* allow temporary hiding of widgets
-
-Implemented behavior:
-
-* edit mode is toggled from the footer pencil button
-* widgets are reordered by dragging their edit-mode handle
-* widget visibility can be toggled from edit mode
-* widget order and visibility are persisted in the settings store
-* the main window drag region is disabled while edit mode is active
-
----
+The default layout contains CPU, RAM, Network, TODO, and Ideas.
 
 ## TODO List View
 
 Status: implemented
 
-Purpose:
+- toggled from the TODO header
+- filters by all, active, or completed state
+- filters by tag
+- shows the visible and total item counts
+- reuses the persisted TODO model rather than maintaining a second list
 
-* provide a fuller view of TODO items
-* improve usability when many TODO items exist
-* support filtering by completion state or tag
-
-This should build on the existing TODO model rather than replacing it.
-
----
+Legacy memo data is migrated into the current TODO store when present.
 
 ## Detailed CPU / RAM History View
 
 Status: implemented
 
-Purpose:
+- toggled from the Footer graph button
+- reuses the existing system polling flow
+- keeps a bounded CPU and RAM history in frontend memory
+- shows current, average, and maximum values
+- derives the represented time range from the update interval
 
-* provide a larger graph view for historical CPU and RAM usage
-* make system trends easier to inspect
-
-Implemented behavior:
-
-* toggled from the footer graph button
-* reuses the existing system usage polling flow
-* keeps CPU and RAM usage history in frontend memory
-* shows current, average, and maximum values for the retained history window
-
----
-
-# System Monitoring Improvements
-
-## Real Network Speed
+## Real Network Throughput
 
 Status: implemented
 
-Current state:
+- Rust collects network interface received and transmitted byte deltas with `sysinfo`
+- the frontend displays current download and upload throughput in Mbps
+- polling uses the same configured interval as system usage
+- values describe current PC traffic, not link speed or ISP speed-test results
 
-* displayed values are calculated from network interface byte deltas
-
-Goal:
-
-* collect real network throughput
-* display upload and download speed
-* keep polling lightweight
-
-Implemented behavior:
-
-* Rust collects network interface received / transmitted byte deltas with `sysinfo`
-* frontend displays download and upload throughput in Mbps
-* values represent current PC network activity, not link speed or ISP speed-test results
-
----
-
-## Real Ping
+## Manual Ping
 
 Status: implemented
 
-Current state:
+- triggered explicitly from the Network widget
+- sends no periodic background Ping traffic
+- defaults to `8.8.8.8`
+- lets users change the target in Settings
+- executes the operating system's Ping command with platform-specific arguments
+- reports command and parsing failures in the UI
 
-* Ping is measured manually only
-
-Goal:
-
-* measure network latency
-* expose result to the dashboard
-
-Implementation should be conservative.
-
-Implemented behavior:
-
-* Ping is triggered by a button in the Network widget
-* the app does not send periodic Ping traffic
-* the default target host is `8.8.8.8`
-* users can change the target host from Settings
-
----
-
-## Real Processor Name
+## Processor and Process Information
 
 Status: implemented
 
-Current state:
+- Rust reads the processor brand through `sysinfo`
+- an empty processor value falls back to `Unknown CPU`
+- CPU and RAM cards can expand to show the highest-usage processes
 
-* processor name is retrieved from the operating system through Rust
-
-Goal:
-
-* obtain actual processor name from the operating system
-* expose it through a Tauri command
-
-Implemented behavior:
-
-* Rust reads the first CPU brand from `sysinfo`
-* frontend displays the returned processor name in the CPU widget
-* an empty value falls back to `Unknown CPU`
-
----
-
-# Desktop Integration
-
-## Task Tray
+## Task Tray and Close Behavior
 
 Status: implemented
 
-Purpose:
+- the tray menu provides Open and Quit
+- left-clicking the tray icon restores and focuses the main window
+- the close button can ask every time, exit, or hide the main window to the tray
+- a selected close preference can be remembered and changed from Settings
 
-* keep the app resident in the system tray
-* allow hiding and restoring the window
-* provide quick access actions
-* allow users to choose whether the close button exits or minimizes to tray
+Desktop-shell differences are evaluated on the affected Windows or Linux environment.
 
-Target platform:
-
-* Windows 11
-* Linux
-
-Platform-specific behavior should be evaluated on the affected environment. Preserve the shared product experience while allowing small, isolated adaptations where desktop APIs or compositor capabilities differ.
-
-Implemented behavior:
-
-* tray menu provides Open and Quit actions
-* tray icon displays a configurable CPU, RAM, or network mini graph
-* mini-graph updates can be configured from 1 to 60 seconds
-* mini-graph updates pause visually on battery power or reduced motion
-* a skippable first-run tutorial introduces the tray status feature without navigating away from the dashboard
-* Settings and Help explain how to keep the icon visible on Windows 11
-* left-clicking the tray icon restores the main window
-* the close button can ask every time, exit, or minimize to tray
-* remembered close behavior can be changed from Settings
-
-Future direction:
-
-* allow animated image or GIF-based tray status styles in addition to the current mini graph
-
----
-
-## Auto Start
+## Taskbar Status Mini Graph
 
 Status: implemented
 
-Purpose:
+- displays CPU, RAM, or Network history in the tray icon
+- is enabled by default with CPU selected
+- supports a persisted update interval from 1 to 60 seconds
+- continues updating while the main window is hidden
+- updates tooltip and menu values for all three metrics
+- keeps the graph visually static on battery power or when reduced motion is requested
+- restores the default app icon when disabled
+- provides Windows 11 visibility guidance in the first-run tutorial, Settings, and Help
+- provides the icon and context menu as the Linux baseline, with tooltip and left-click support dependent on the desktop environment
 
-* allow the app to launch automatically on login
+Possible future extension:
 
-Target platform:
+- animated image or GIF-based tray status styles
 
-* Windows 11
-* Linux
+## First-Run Tutorial
 
-Implemented using Tauri's autostart plugin.
+Status: implemented
 
----
+- opens for users who have not completed or skipped it
+- introduces the dashboard, monitoring, customization, taskbar mini graph, and Help
+- can be skipped without navigating away from the dashboard
+- stores completion in `settings.json`
+- recognizes the legacy tray-status introduction flag as completed
+
+## Automatic Startup
+
+Status: implemented
+
+- uses `tauri-plugin-autostart`
+- toggled from **Launch at startup** in Settings
+- uses the native login-startup mechanism exposed by the plugin
 
 ## Shortcut Buttons
 
 Status: implemented
 
-Purpose:
-
-* provide quick access buttons for common actions
-* keep shortcut execution local to the desktop app
-* avoid exposing arbitrary shell command execution
-
-Implemented behavior:
-
-* the footer shortcuts button toggles a shortcuts-only view
-* users can configure up to six shortcuts from Settings
-* supported shortcut types are URL, file / folder, and app
-* shortcut definitions are persisted in the settings store
-* shortcut execution is routed through a focused Rust command
+- the Footer shortcut button toggles a shortcuts-only view
+- users configure up to six shortcuts in Settings
+- supported types are URL, file or folder, and application
+- shortcut definitions are persisted in `settings.json`
+- execution is routed through a focused Rust command
+- URL schemes and local paths are validated
 
 Out of scope:
 
-* arbitrary shell command shortcuts
-* shortcut arguments
-* plugin-style shortcut extensions
+- arbitrary shell commands
+- shortcut command-line arguments
+- plugin-style shortcut extensions
 
----
-
-## Idea Editor Undo / Redo Shortcuts
+## Idea Editor
 
 Status: implemented
 
-Purpose:
+- opens in a separate opaque, decorated native window
+- reuses the existing editor window when another idea is selected
+- stores title, Markdown body, and timestamps locally
+- limits titles to 200 characters and bodies to 200,000 characters
+- highlights Markdown syntax with CodeMirror
+- autosaves approximately 700 ms after editing stops
+- supports immediate saving with `Ctrl+S`
+- saves pending changes before close after user confirmation
+- notifies the main window after saving or deleting
 
-* make editing longer ideas easier with familiar keyboard shortcuts
-* keep editor-specific shortcuts scoped to Idea Editor
+## Idea Editor Undo / Redo
 
-Implemented behavior:
+Status: implemented
 
-* `Ctrl+Z` undoes the latest edit in the focused title or Markdown body field
-* `Ctrl+Shift+Z` redoes the latest undone edit on Windows and Linux
-* the title uses the WebView's native input history
-* the Markdown body uses CodeMirror's native history with its 100-event minimum depth and 500 ms grouping delay
-* title and body history is discarded when another idea is opened, including reopening the same idea
-* externally loaded content is not added to the Markdown body history
-* undo and redo changes participate in the existing autosave flow
-* title and body input is rejected beyond the persisted 200 and 200,000 character limits
-* history remains in frontend memory only and is not persisted across editor sessions
+- `Ctrl+Z` undoes in the focused title or Markdown body field
+- `Ctrl+Shift+Z` redoes on Windows and Linux
+- the title uses native input history
+- the Markdown body uses CodeMirror history
+- title and body histories reset when another idea is opened, including reopening the same idea
+- externally loaded body content is not added to editor history
+- undo and redo participate in the normal autosave flow
+- history remains in frontend memory and is not persisted between editor sessions
+
+## Save Idea as a Markdown File
+
+Status: implemented
+
+- started from the Idea Editor **ファイルに保存** action
+- saves the current Markdown body as UTF-8
+- uses a native save dialog
+- suggests a `.md` filename derived from the title
+- replaces title whitespace with underscores and sanitizes characters for Windows and Linux
+- uses the title only for the suggested filename and does not add it to the file body
+- includes current unsaved editor changes
+- treats dialog cancellation as a no-op
+- reports write failures without changing the stored idea
+- does not change Idea persistence state or timestamps
+- disables the action when both title and body are empty after trimming
+
+Implementation uses Idea Editor-scoped dialog and text-file write permissions. Importing files, synchronizing later edits, and bulk saving remain out of scope.
+
+## Markdown-Powered Help
+
+Status: implemented
+
+- toggled from the Footer help button
+- loads user-facing topics from `src/help/content`
+- groups topics by category in a collapsible sidebar
+- renders the source Markdown through React Markdown
+- links Settings directly to the taskbar status guide
 
 ---
 
 # Future Ideas
 
-Items in this section with a proposed or exploratory status are ideas, not active plans. Implemented sections are retained as behavior records.
-
-They should not be implemented without explicit approval.
-
----
-
-## Export Idea as Markdown
-
-Status: implemented
-
-Purpose:
-
-* allow an idea to be saved as a portable local Markdown file
-* let users reuse or archive idea content outside pure_board
-
-Implemented behavior:
-
-* export the currently open idea through an explicit Idea Editor action
-* suggest a `.md` filename derived from the idea title
-* preserve the Markdown body without silently changing its content
-* save text as UTF-8
-* treat cancellation as a no-op and report write errors without changing the stored idea
-* use the title only for the suggested filename, without adding it to the exported body
-* sanitize the suggested filename for Windows and Linux, replacing title whitespace with underscores, while allowing the user to choose the final path
-* export the current editor content, including unsaved changes, without changing Idea persistence or timestamps
-
-Implementation notes:
-
-* uses a native save dialog and Idea Editor-scoped Tauri dialog and filesystem permissions
-* keep export separate from the existing local persistence and autosave flow
-
-Out of scope for the initial version:
-
-* importing Markdown files
-* synchronizing an exported file with later edits
-* bulk export of all ideas
-
----
-
-## Git / GitHub Integration for Ideas
-
-Status: exploratory
-
-Purpose:
-
-* explore ways to connect Idea Editor content with Git or GitHub workflows
-
-The concrete user workflow has not been decided. Requirements should be defined before implementation.
-
-Questions to resolve:
-
-* whether integration targets a local Git repository, GitHub, or both
-* whether the main action is exporting files, committing changes, creating issues, or another focused workflow
-* how users select a repository, branch, destination path, and GitHub account
-* which actions require preview and explicit confirmation
-* how authentication, offline use, conflicts, and failures are handled
-
-Implementation constraints:
-
-* do not expose arbitrary shell command execution
-* do not store access tokens or GitHub credentials in the idea store
-* prefer established Git and GitHub authentication mechanisms
-* show the exact content and destination before any remote write
-* keep Git / GitHub failures from affecting local idea persistence
-* request only the minimum repository and GitHub permissions required by the chosen workflow
-
-Out of scope until requirements are approved:
-
-* automatic commits or pushes
-* background synchronization
-* creating or modifying remote GitHub content without explicit user confirmation
-
----
+The following entries are ordered by the current implementation priority. They still require explicit approval and requirement review before work begins.
 
 ## AI Consultation from Idea Editor
 
@@ -400,74 +284,72 @@ Status: proposed
 
 Purpose:
 
-* allow users to consult an AI service or coding agent while developing an idea
-* pass the current idea title and body as consultation context
-* start the consultation from an explicit button in Idea Editor
+- let users consult an AI service or coding agent while developing an idea
+- pass the current title and body as explicit consultation context
+- start consultation from a deliberate Idea Editor action
 
-Possible targets include:
+Possible targets include ChatGPT, Codex, Claude, and Claude Code.
 
-* ChatGPT
-* Codex
-* Claude
-* Claude Code
+Questions and constraints:
 
-Expected flow:
+- browser services and local coding agents need different integration paths
+- show the exact shared content and ask for confirmation
+- do not send idea content automatically or in the background
+- prefer official APIs, supported deep links, or focused local commands over UI automation
+- do not expose or persist authentication secrets unnecessarily
+- define content-length limits and useful error handling
+- isolate provider-specific behavior from Idea persistence
+- do not allow a target to modify or delete saved ideas without explicit approval
 
-* the user selects the AI target
-* the user presses a consultation button in Idea Editor
-* the app shows the content that will be shared and asks for confirmation
-* the selected AI target opens with the idea content as context
+## Git / GitHub Integration for Ideas
 
-Implementation notes:
+Status: exploratory
 
-* browser-based services and locally installed coding agents may require different integration paths
-* prefer supported deep links, official APIs, or focused local commands over UI automation
-* do not send idea content automatically or in the background
-* do not expose or persist API keys, session tokens, or other authentication secrets unnecessarily
-* define content-length limits and clear error handling before implementation
-* keep provider-specific behavior isolated so adding or removing a target does not affect Idea persistence
+Purpose:
 
-Out of scope for the initial version:
+- explore a focused connection between Idea Editor content and Git or GitHub workflows
 
-* automatic background consultation
-* sending all saved ideas at once
-* allowing an AI target to modify or delete saved ideas without explicit user approval
+The concrete user workflow is not yet defined. Requirements must decide:
 
----
+- local Git, GitHub, or both
+- saving files, committing, creating issues, or another primary action
+- repository, branch, path, and account selection
+- preview and confirmation boundaries
+- authentication, offline behavior, conflicts, and failures
+
+Constraints:
+
+- do not expose arbitrary shell execution
+- do not store GitHub tokens or credentials in the idea store
+- prefer established Git and GitHub authentication mechanisms
+- preview the exact content and destination before a remote write
+- keep failures from affecting local idea persistence
+- request the minimum necessary permissions
+
+Automatic commits, pushes, background synchronization, and unconfirmed remote writes remain out of scope until requirements are approved.
 
 ## Gmail Dashboard
 
 Status: proposed
 
-Scope:
+Initial scope:
 
-* Gmail only
-* single account
-* display message list only
-* show subject
-* show sender
-* show received time
-* show unread / read state
-* open messages in the default browser
+- Gmail only
+- one account
+- message list only
+- subject, sender, received time, and read state
+- open a selected message in the default browser
+- OAuth 2.0 and the Gmail API
 
 Out of scope:
 
-* Yahoo Mail
-* multiple accounts
-* displaying email body inside the app
-* composing mail
-* sending mail
-* deleting mail
-* bulk mail operations
+- Yahoo Mail or other providers
+- multiple accounts
+- rendering message bodies in pure_board
+- composing, sending, deleting, or bulk-operating on mail
+- password or basic-auth access
 
-Authentication:
-
-* OAuth 2.0
-* Gmail API
-
-Do not implement password-based or basic-auth access.
-
-Gmail access must not expose secrets or tokens.
+Authentication secrets and tokens must not be exposed through application data or logs.
 
 ---
 
@@ -475,42 +357,29 @@ Gmail access must not expose secrets or tokens.
 
 The following are currently out of scope:
 
-* Electron migration
-* backend server
-* cloud synchronization
-* multi-user support
-* mobile support
-* web-only version
-* complex plugin system
-* full email client functionality
-* advanced task manager replacement
+- Electron migration
+- a backend server
+- cloud synchronization
+- multi-user support
+- mobile support
+- a web-only version
+- a complex plugin system
+- a full email client
+- an advanced task-manager replacement
 
-pure_board is not intended to replace Task Manager.
-
-It is a lightweight desktop dashboard.
+pure_board remains a lightweight local desktop dashboard.
 
 ---
 
 # Scope Control
 
-When adding features:
+When adding a feature:
 
-* keep the app small
-* avoid unrelated redesigns
-* reuse existing architecture
-* prefer incremental improvements
-* avoid introducing broad frameworks
+- inspect the current implementation first
+- implement only the explicitly requested portion
+- reuse the existing architecture
+- prefer incremental changes
+- avoid broad frameworks and permissions
+- update this document when a roadmap item becomes implemented
 
-A roadmap item becoming implemented should also result in this document being updated.
-
----
-
-# AI Agent Notes
-
-Roadmap items must be treated as passive context.
-
-Do not implement them unless a task explicitly requests implementation.
-
-If a user asks for a roadmap item, inspect the current code first and implement only the requested portion.
-
-When the requested task is ambiguous, prefer a small incremental implementation over a large complete redesign.
+When requirements are unclear, define the user workflow before choosing an integration or dependency.
