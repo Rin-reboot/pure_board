@@ -23,15 +23,15 @@ Targetが空のSlotはショートカット画面に表示されません。**Re
 
 ### File
 
-ファイルは既定のアプリ、フォルダはエクスプローラーで開きます。Windowsのフルパスを入力します。
+ファイルは既定のアプリ、フォルダはOSの既定のファイルマネージャーで開きます。使用中のOSで対象を特定できるフルパスを入力します。
 
-例: `C:\Users\User\Documents\notes.txt`
+例: Windowsでは`C:\Users\User\Documents\notes.txt`、Linuxでは`/home/user/Documents/notes.txt`
 
 ### App
 
-指定したアプリケーションを起動します。実行ファイルのフルパスを入力します。
+指定したアプリケーションを起動します。使用中のOSにある実行ファイルのフルパスを入力します。コマンドライン引数や任意のシェルコマンドは指定できません。
 
-例: `C:\Windows\System32\notepad.exe`
+例: Windowsでは`C:\Windows\System32\notepad.exe`、Linuxでは`/usr/bin/konsole`
 
 ## 実行する
 

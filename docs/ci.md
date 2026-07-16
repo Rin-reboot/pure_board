@@ -1,10 +1,10 @@
 # CI and release builds
 
-GitHub Actions checks pull requests and builds release packages for Windows and x86_64 Linux.
+GitHub Actions checks pull requests and pushes to `main`, and builds release packages for Windows and x86_64 Linux.
 
 ## Pull request checks
 
-`.github/workflows/pr.yml` runs the frontend lint, format, type-check, and unit-test commands. It also checks Rust formatting, Clippy warnings, and compilation on Ubuntu.
+`.github/workflows/pr.yml` runs for pull requests and pushes to `main`. It uses Node.js 20 and pnpm 9 to run frontend lint, format, type-check, and unit-test commands. It also uses the stable Rust toolchain to check Rust formatting, Clippy warnings, and compilation on Ubuntu.
 
 Distribution packages are not generated during pull request checks. DEB, RPM, AppImage, and Arch packages are all built only by the release workflow, so no Linux distribution receives a separate packaging check on every pull request.
 

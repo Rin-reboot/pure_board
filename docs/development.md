@@ -2,340 +2,285 @@
 
 This document defines the development conventions for **pure_board**.
 
-Architecture is described in `architecture.md`.
+Architecture is described in `architecture.md`. Platform behavior is described in `windows.md`.
 
-AI agents and contributors should follow these conventions unless a task explicitly requires otherwise.
+AI agents and contributors should also follow `AGENTS.md`.
 
 ---
 
 # General Principles
 
-Prefer:
+Prefer readable, explicit code and small changes that follow the existing architecture.
 
-* readable code
-* explicit behavior
-* small changes
-* consistency with the existing project
+- extend existing code before introducing a parallel implementation
+- keep each change limited to the requested behavior
+- avoid unrelated refactoring or formatting
+- prefer standard, React, Rust, and Tauri APIs before adding dependencies
+- preserve local data and cross-platform behavior
 
-Avoid unnecessary abstractions.
-
-A simple implementation is preferred over a clever implementation.
+Simple code is preferred over clever abstractions.
 
 ---
 
 # Before Writing Code
 
-Before implementing a feature:
+Before implementing a change:
 
-1. Understand the existing implementation.
-2. Follow existing patterns.
-3. Reuse code before creating new code.
-4. Keep the scope limited to the requested task.
+1. Inspect the existing implementation and tests.
+2. Read the relevant architecture and platform documentation.
+3. Check Tauri capabilities when the change uses windows, plugins, or filesystem access.
+4. Distinguish application bugs from operating-system, window-system, or compositor behavior.
+5. Keep the plan and implementation scoped to the requested task.
 
-Do not refactor unrelated code.
+Roadmap entries are passive context and are not active tasks without explicit user approval.
 
 ---
 
 # TypeScript
 
-Always enable strict typing.
+TypeScript strict mode is enabled.
 
 Avoid:
 
-* any
-* unnecessary type assertions
-* implicit assumptions
+- `any`
+- unnecessary type assertions
+- silently accepting invalid persisted or IPC data
+- duplicating public structures across modules
 
 Prefer:
 
-* interfaces for public structures
-* type aliases for unions
-* readonly values where appropriate
+- interfaces for public object structures
+- type aliases for unions
+- readonly values where appropriate
+- validation and normalization at storage and command boundaries
 
 ---
 
 # React
 
-Use functional components.
+Use functional components and hooks.
 
-Prefer hooks over class-style patterns.
-
-Components should be responsible only for rendering and user interaction.
-
-Business logic belongs inside hooks.
+Components should focus on presentation, interaction, and view-specific orchestration. Reusable polling, persistence, and settings behavior belongs in hooks. Do not extract a hook solely to move one small, single-use handler out of a component.
 
 Avoid:
 
-* duplicated state
-* duplicated logic
-* deeply nested JSX
+- duplicated state and persistence logic
+- deeply nested JSX
+- unnecessary global state
+- expensive work during render
 
-Split components before they become difficult to understand.
-
----
-
-# Component Design
-
-Each component should have one responsibility.
-
-Good examples:
-
-* CpuCard
-* RamCard
-* TodoPanel
-* IdeaPanel
-* MarkdownEditor
-* TitleBar
-
-Avoid components that perform multiple unrelated tasks.
-
-If a component becomes excessively large, split it into smaller components.
-
----
-
-# Hooks
-
-Hooks encapsulate reusable logic.
-
-Typical responsibilities include:
-
-* polling
-* persistence
-* application state
-* Tauri communication
-
-Hooks should remain reusable.
-
-Avoid creating hooks for logic that is only used once.
-
----
-
-# Rust
-
-Rust code should be:
-
-* explicit
-* readable
-* idiomatic
-
-Prefer standard library functionality whenever practical.
-
-Avoid suppressing warnings.
-
-Keep unsafe code out of the project unless absolutely necessary.
-
----
-
-# Tauri
-
-Use Tauri APIs before considering third-party libraries.
-
-Platform-specific code should remain isolated.
-
-Tauri commands should:
-
-* perform one task
-* return predictable results
-* expose simple interfaces
-
----
-
-# Naming
-
-Choose descriptive names.
-
-Avoid abbreviations unless they are already widely understood.
-
-Examples:
-
-Good
-
-* CpuCard
-* TodoPanel
-* IdeaEditorApp
-* useSystemUsage
-
-Avoid
-
-* DataManager2
-* TempThing
-* UtilHelper
+Split components when doing so gives the resulting files clearer responsibilities.
 
 ---
 
 # File Organization
 
-Prefer small files.
+Use the existing directories:
 
-When creating new files:
+- `src/components`: visible React UI
+- `src/hooks`: reusable polling, persistence, and application state
+- `src/help`: in-app Markdown help and topic metadata
+- `src/ideas`: Idea-specific events and file operations
+- `src/windows`: secondary window creation and reuse
+- `src-tauri/src`: Rust commands and desktop integration
+- `src-tauri/capabilities`: permissions scoped by window
+- `packaging`: distribution-specific packaging
 
-* place components under `components`
-* place reusable hooks under `hooks`
-* keep Rust code inside `src-tauri`
-
-Avoid dumping unrelated utilities into generic helper files.
-
----
-
-# Dependencies
-
-Before adding a dependency:
-
-* check the standard library
-* check React
-* check Tauri
-* check existing project utilities
-
-Add a dependency only when it provides clear value.
-
-Smaller dependency trees are preferred.
+Avoid generic utility files that collect unrelated behavior.
 
 ---
 
-# Formatting
+# Rust
 
-Frontend formatting is handled by Biome.
+Rust code should remain explicit, safe, readable, and warning-free.
 
-Do not manually reformat unrelated files.
+- prefer the standard library before adding crates
+- keep platform-specific branches localized
+- validate command input before invoking OS processes
+- return useful errors instead of suppressing failures
+- avoid `unsafe` unless it is unavoidable and documented
 
-Rust formatting should use:
-
-```bash
-cargo fmt
-```
-
----
-
-# Linting
-
-Frontend:
-
-```bash
-pnpm lint
-```
-
-Automatic fixes:
-
-```bash
-pnpm lint:fix
-```
-
-Rust:
-
-```bash
-cargo clippy --all-targets -- -D warnings
-```
-
-Warnings should be fixed rather than ignored whenever possible.
+Do not suppress Clippy warnings to make validation pass.
 
 ---
 
-# Testing
+# Tauri Integration
 
-Frontend:
+Choose the narrowest integration that fits the task:
 
-```bash
-pnpm test
-```
+1. existing Tauri JavaScript API
+2. existing configured Tauri plugin
+3. existing focused Rust command
+4. new focused Rust command when the previous options are insufficient
 
-Type checking:
+Custom commands should perform one task, expose a small interface, validate input, and keep OS-specific details in Rust.
 
-```bash
-pnpm typecheck
-```
+When adding an API or plugin call:
 
-If tests cannot be executed in the current environment, clearly explain why.
+- update the capability for the window that needs it
+- grant only the required permission
+- do not broaden main-window permissions to solve a secondary-window need
+- remember that capability changes require a full Tauri restart
 
-Never state that tests passed unless they were actually run.
+The Idea Editor intentionally has separate dialog, text-file write, store, and window-destroy permissions.
 
 ---
 
 # Persistence
 
-Persistent data should remain backward compatible whenever possible.
+Persistent data uses `tauri-plugin-store`.
 
-Avoid changing stored data formats unless explicitly required.
+Current stores are:
 
-If a migration becomes necessary:
+- `settings.json`
+- `todos.json`
+- `ideas.json`
 
-* document it
-* keep it predictable
-* preserve existing user data whenever practical
+Stored data must be validated and normalized when loaded. Preserve backward compatibility whenever practical; the TODO implementation, for example, migrates legacy memo data.
+
+If a migration is necessary:
+
+- document the old and new formats
+- make the migration deterministic
+- preserve existing user data
+- add tests for valid, invalid, and legacy values
+
+User-selected Markdown files are external outputs, not another application persistence store.
+
+---
+
+# Dependencies
+
+Before adding a dependency, check:
+
+- the TypeScript, React, or Rust standard facilities
+- existing project helpers
+- Tauri core APIs
+- configured Tauri plugins
+
+Add a package or crate only when it provides clear value that the existing stack cannot provide. Explain the need in the change description and avoid broad packages for a narrow task.
+
+---
+
+# Formatting and Line Endings
+
+Source, Markdown, JSON, TOML, TypeScript, Rust, and CSS files use LF line endings. Windows-specific `.bat`, `.cmd`, and `.ps1` files may use CRLF.
+
+Frontend formatting is handled by Biome:
+
+```bash
+pnpm lint
+pnpm lint:fix
+pnpm format
+```
+
+Do not manually reformat unrelated files.
+
+From the repository root, check Rust formatting with:
+
+```bash
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+```
+
+To apply Rust formatting, run `cargo fmt` from `src-tauri` or use the same manifest path without `--check`.
+
+---
+
+# Testing and Validation
+
+Frontend unit and component tests use Vitest, Testing Library, and jsdom. Test files live next to their implementation.
+
+Run the frontend validation stack from the repository root:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+Run Rust validation either from `src-tauri` or with an explicit manifest path:
+
+```bash
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo build --manifest-path src-tauri/Cargo.toml
+```
+
+Run tests that are proportional to the change. Platform-specific desktop behavior still requires verification on the affected environment.
+
+If a command cannot be executed, report exactly which validation was skipped and why. Never claim that a check passed unless it was run successfully.
 
 ---
 
 # Error Handling
 
-Fail gracefully.
+Fail gracefully and expose useful user-facing errors where recovery is possible.
 
-Provide meaningful error messages.
-
-Do not silently ignore errors.
-
-Avoid catching exceptions unless they can be handled correctly.
+- do not silently ignore persistence or OS integration failures
+- log contextual information without exposing secrets
+- treat a cancelled native dialog as a normal no-op
+- keep external file and shortcut failures from corrupting local state
+- avoid catch blocks that cannot handle or report the error
 
 ---
 
 # Performance
 
-Optimize only after identifying an actual bottleneck.
+Optimize only after identifying an actual problem.
 
 Avoid:
 
-* unnecessary polling
-* unnecessary state updates
-* unnecessary allocations
-* repeated expensive computations
+- multiple pollers for the same data
+- unnecessary state updates and renders
+- unbounded history or editor state
+- repeated expensive computations
+- background network activity that the feature does not require
 
-Readability is generally more important than micro-optimizations.
+The system and network hooks should continue to share the configured update interval. Ping remains user-triggered.
 
 ---
 
 # Documentation
 
-Whenever behavior changes:
+When behavior changes:
 
-* update relevant documentation
-* remove outdated information
-* avoid duplicated documentation
+- update README feature descriptions when the product surface changes
+- update architecture and platform documentation when integration changes
+- update the roadmap when a planned item becomes implemented
+- update `src/help/content` when users need new instructions
+- remove obsolete planned-state wording
+- keep English and Japanese document pairs equivalent
 
-Documentation should reflect the current implementation.
-
----
-
-# Pull Requests
-
-Each change should focus on a single feature or bug.
-
-Avoid combining:
-
-* formatting
-* refactoring
-* feature work
-* documentation updates
-
-into one large change unless they are directly related.
+Documentation must describe the current implementation rather than an intended future design.
 
 ---
 
-# Commit Philosophy
+# Git and Pull Requests
 
-Small commits are preferred.
+Do not commit or push directly to `main`.
 
-Commit messages should clearly describe:
+1. Create a dedicated branch from the current default branch before editing.
+2. Keep commits and the pull request focused on one related change.
+3. Use a typed commit prefix such as `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, or `ci:`.
+4. Avoid unrelated formatting, refactoring, and renames.
+5. Update tests and documentation when behavior changes.
 
-* what changed
-* why it changed
+Pull request descriptions should explain the submitted changes, their purpose, and relevant validation. Do not include unsuccessful local attempts or local environment problems in the pull request description.
+
+Do not commit or push until the user explicitly requests the publication flow.
 
 ---
 
 # Code Review Expectations
 
-Before considering work complete:
+Before considering implementation complete, confirm that:
 
-* code builds
-* formatting passes
-* lint passes
-* documentation is updated if necessary
+- the change matches the requested scope
+- data compatibility and capability permissions were considered
+- relevant formatting, lint, type, test, and build checks passed
+- platform-specific claims were verified on the appropriate environment or clearly qualified
+- documentation reflects the resulting behavior
 
-The goal is not only to make the code work, but also to keep the project maintainable for future contributors and AI agents.
+The goal is to keep the project maintainable for contributors and AI agents as well as functional for users.

@@ -2,266 +2,217 @@
 
 This document describes platform-specific behavior and development policies for **pure_board**.
 
-The application supports **Windows 11** and **Linux**. Its visual design is inspired by and respects the glass-style UI of Windows 11.
+The application supports **Windows 11** and **Linux**. Windows 11 is the visual reference for its glass-style UI, not the sole reference for application behavior.
 
-AI agents should read this document before modifying platform-specific functionality.
-
----
-
-# Supported Platforms
-
-* Windows 11
-* Linux
-
-The application is designed as a cross-platform productivity dashboard.
-
-Correct behavior should be evaluated on the affected supported platform. Windows 11 is the visual reference for the glass-style design, not the sole behavioral reference.
+Read this document before modifying window, tray, startup, Ping, shortcut, transparency, or other desktop integration behavior.
 
 ---
 
-## Development Platforms
+# Supported and Development Platforms
 
-Development may occur on:
+Supported application platforms:
 
-* Windows 11
-* Linux (CachyOS)
+- Windows 11
+- Linux
 
-Both platforms are supported development and application environments. macOS is not currently included in the build matrix or supported-platform claim.
+Development may occur on Windows 11 or Linux, including CachyOS. macOS is not currently included in the build matrix or supported-platform claim.
 
----
-
-# Execution Environment
-
-AI agents (Codex, ChatGPT, etc.) may execute on either Windows or Linux.
-
-Do not assume which operating system is currently being used.
-
-Before diagnosing a problem, determine whether the observed behavior originates from:
-
-* the application
-* Tauri
-* the operating system
-* the desktop environment
-* the window manager
-* the compositor
-
-Do not modify application logic before identifying the actual cause.
+AI agents may also execute in a different environment from the target platform. Inspect the current environment and evaluate a reported problem on the affected supported platform.
 
 ---
 
-# Platform-Specific Desktop Behavior
+# Diagnosing Desktop Behavior
 
-The following features should be evaluated on each affected platform:
+Before changing implementation, determine whether the observed behavior comes from:
 
-* transparent windows
-* blur effects
-* always-on-top
-* title bar behavior
-* task tray integration
-* auto start
-* window focus
-* native window controls
+- pure_board
+- Tauri or the WebView runtime
+- the operating system
+- the desktop environment
+- Wayland or X11
+- the window manager or compositor
+- a missing operating-system command
 
-Differences between platforms should not automatically be treated as bugs. Determine whether the behavior comes from the application, the operating system, the window system, or the compositor.
-
----
-
-# Linux Development
-
-Linux is a supported application and development environment.
-
-Most application logic can be implemented and tested on Linux.
-
-However, some desktop features may behave differently depending on:
-
-* Wayland
-* X11
-* KDE Plasma
-* GNOME
-* compositor implementation
-
-These differences may require small platform-specific handling when they prevent supported functionality. Keep such handling isolated and verify that it does not regress other platforms.
+A difference between Windows and Linux is not automatically an application bug.
 
 ---
 
-# Wayland
+# Linux, Wayland, and X11
 
-Wayland intentionally restricts several window management operations.
+Linux is a supported application and development environment. Most application logic can be implemented and tested there, but desktop integration varies by environment.
 
-Depending on the compositor:
+Wayland compositors may restrict or reinterpret:
 
-* Always-on-top requests may be ignored.
-* Window positioning may differ.
-* Transparency effects may vary.
-* Blur implementations may differ.
-* Window activation behavior may vary.
+- always-on-top requests
+- window positioning and activation
+- transparency and blur
+- focus changes
 
-These behaviors are expected.
+X11 behavior may differ from Wayland. KDE Plasma, GNOME, and other desktops may also expose different tray, startup, and compositor behavior.
 
-Do not implement application workarounds solely to satisfy Wayland behavior.
-
----
-
-# X11
-
-Some Linux users may still use X11.
-
-Behavior under X11 may differ from Wayland.
-
-Evaluate X11-specific issues on X11 and keep any necessary compatibility logic isolated.
+Do not add a workaround solely to make one environment imitate Windows. When a supported feature is prevented from working, keep any necessary platform-specific handling small, isolated, documented, and verified against other supported platforms.
 
 ---
 
-# Transparency
+# Main Window and Glass UI
 
-The application uses a transparent Glassmorphism-style interface.
+The main dashboard is configured as a transparent, undecorated 400 x 600 window with a 350 px minimum width. The React UI supplies the title bar, window controls, glass surfaces, and CSS backdrop blur.
 
-Transparency may appear differently depending on:
+Transparency and blur appearance may vary with:
 
-* operating system
-* graphics driver
-* compositor
-* desktop theme
+- operating system and WebView implementation
+- graphics driver
+- compositor
+- desktop theme
+- whether the compositor supports background sampling
 
-Visual differences alone do not necessarily indicate implementation problems.
+Visual differences alone do not prove that the application implementation is incorrect.
 
----
-
-# Blur
-
-Blur is a visual enhancement.
-
-If blur behaves differently across platforms:
-
-* verify the platform
-* verify compositor capabilities
-* verify Tauri support
-
-Do not replace the implementation without evidence that the current implementation is incorrect.
+Always-on-top uses the Tauri window API and is persisted in the local settings store. Windows should normally honor it; a Linux compositor may ignore the request.
 
 ---
 
-# Always-on-Top
+# Idea Editor Window
 
-Always-on-top behavior depends on the operating system.
+Idea Editor is a separate, opaque, decorated, resizable native window. This keeps long-form text readable in light and dark themes.
 
-On Windows:
+The frontend creates it with `WebviewWindow`, reuses an existing editor instance, and sends focused events when another idea should open. CodeMirror is loaded lazily only for the editor role.
 
-* this feature should function normally.
+When closing with pending changes, Idea Editor asks whether to save. After persistence succeeds, it destroys the secondary window directly so the same close-request event is not entered again.
 
-On Linux:
-
-* the compositor may ignore the request.
-
-An ignored request is not necessarily an application bug.
+The editor has a separate Tauri capability. Changes to window capabilities require a full Tauri application restart; frontend hot reload alone does not apply them.
 
 ---
 
-# Native Window Features
+# Task Tray and Close Behavior
 
-Features such as:
+Task tray functionality is implemented on supported desktop platforms.
 
-* minimize
-* close
-* title bar controls
-* window decorations
+- left-clicking the tray icon shows and focuses the main window
+- the tray menu provides **Open** and **Quit**
+- the main close button can ask every time, exit the app, or hide the window while the process remains in the tray
+- the remembered close preference can be changed from Settings
 
-should remain as close as possible to native platform behavior.
-
-Avoid implementing custom behavior unless necessary.
-
-The main dashboard keeps its custom transparent, undecorated window. Idea Editor is a separate opaque, decorated native window so long-form text remains readable in both themes.
-
-Idea Editor intercepts a close request only when it needs to finish saving. After persistence succeeds, it destroys the secondary window directly to avoid re-entering the same close-request event. Changes to window capabilities require a full Tauri app restart; frontend hot reload alone does not apply them.
+Tray icon visibility, menu placement, and activation behavior may vary between Windows desktop shells and Linux tray implementations.
 
 ---
 
-# Task Tray
+# Automatic Startup
 
-Task tray functionality is implemented.
+Automatic startup is implemented with `tauri-plugin-autostart`.
 
-Implementation should preserve behavior across supported platforms. Platform-specific handling may be introduced when necessary, but only within isolated code paths.
+Users enable or disable **Launch at startup** from Settings. The plugin registers the application with the native login-startup mechanism for the current platform; the application does not maintain a parallel startup-file format.
 
-The close button can either exit the app or hide the main window while keeping the app resident in the tray. Users can choose the behavior from Settings.
-
----
-
-# Auto Start
-
-Automatic startup should integrate with the native operating system.
-
-Do not introduce platform-independent abstractions unless they simplify maintenance.
+Verify registration and launch behavior on the affected operating system. Desktop-session startup behavior on Linux may depend on the environment.
 
 ---
 
-# File System
+# System Information
 
-Use Tauri APIs whenever possible.
+CPU, memory, processor, process, and network values are collected in Rust with `sysinfo`.
 
-Avoid writing platform-specific filesystem logic unless absolutely required.
+Network throughput is calculated from received and transmitted byte deltas across network interfaces and displayed in Mbps. It represents current device traffic, not physical link speed or an ISP speed test.
+
+The frontend polls system and network commands at the persisted update interval, with a 100 ms minimum.
 
 ---
 
-# Testing
+# Ping
 
-When modifying platform-specific functionality:
+Ping is measured only after the user presses the Ping button. The app does not send periodic background Ping traffic.
 
-On Windows:
+Rust starts the operating system's `ping` executable with one request and a short timeout:
 
-* verify behavior directly whenever possible.
+- Windows uses Windows-compatible count and timeout flags
+- Linux uses Linux-compatible count and timeout flags
 
-On Linux:
+The target is passed as a command argument rather than interpolated into a shell command. Failures may indicate an invalid target, network restrictions, a host that does not answer ICMP, or an unavailable `ping` executable.
 
-* verify that compilation succeeds.
-* verify that application logic remains correct.
-* do not assume desktop behavior matches Windows.
+---
+
+# Shortcut Launching
+
+Shortcut definitions are local settings. The supported action types are URL, file or folder, and application.
+
+- URLs must start with `http://` or `https://`.
+- File and application targets must exist.
+- Windows opens URLs, files, and folders through the default registered application.
+- Linux opens URLs, files, and folders through `xdg-open`.
+- Application targets are launched directly without accepting arbitrary command-line arguments.
+
+Arbitrary shell-command shortcuts are intentionally unsupported. Keep validation in Rust and add platform branches only inside the focused launcher boundary.
+
+---
+
+# Markdown File Saving
+
+Idea Editor can save its current body to a user-selected Markdown file.
+
+- `tauri-plugin-dialog` opens the native save dialog.
+- `tauri-plugin-fs` writes UTF-8 text to the selected path.
+- dialog and text-file write permissions are scoped to the `idea-editor` capability.
+- the title supplies only the suggested cross-platform-safe filename.
+- saving a file does not change Idea persistence or timestamps.
+
+Do not replace this with platform-specific filesystem code unless the Tauri APIs cannot provide required supported behavior.
+
+---
+
+# Testing Platform-Specific Changes
+
+For Windows-specific reports:
+
+- verify behavior on Windows 11 when possible
+- distinguish WebView, shell, and application behavior
+- check tray, startup, transparency, window controls, and path handling directly
+
+For Linux-specific reports:
+
+- record the distribution, desktop environment, and Wayland or X11 session
+- verify compilation and application logic
+- verify affected desktop behavior on the reported environment when possible
+- do not assume comparison with Windows alone determines correctness
+
+Cross-platform compilation is necessary but does not replace desktop behavior testing.
 
 ---
 
 # Continuous Integration
 
-Windows and Linux builds are performed using GitHub Actions.
+Pull request Rust checks run on Ubuntu and validate formatting, Clippy warnings, and compilation. Frontend checks also run on Ubuntu.
 
-Windows and Linux builds validate cross-platform buildability. Platform-specific desktop behavior still requires verification on the affected environment.
+Release builds produce:
+
+- Windows MSI and NSIS installers
+- Linux DEB, RPM, and AppImage packages on Ubuntu 22.04
+- an Arch Linux package in an Arch container
+
+Successful builds validate cross-platform buildability, not identical transparency, blur, tray, startup, focus, or always-on-top behavior. See `ci.md` for the complete workflow and package details.
 
 ---
 
 # Platform-Specific Code
 
-When platform-specific code becomes necessary:
+When a platform branch is necessary:
 
-* isolate it
-* document why it exists
-* avoid leaking platform conditions into unrelated modules
+- isolate it at one clear boundary
+- document why it exists
+- use argument-based process invocation instead of a shell when possible
+- avoid leaking platform checks into unrelated components and hooks
+- verify that supported platforms still compile
 
-Prefer a single platform boundary instead of scattered conditional logic.
+Current localized examples are Ping arguments and default-application launching in `src-tauri/src/lib.rs`.
 
 ---
 
 # Bug Reports
 
-Before fixing a reported issue:
+Before implementing a fix, determine:
 
-Determine:
+1. Which operating system and version are affected?
+2. Which desktop environment is used?
+3. Is the session Wayland or X11?
+4. Which WebView, shell, compositor, or external OS command is involved?
+5. Can the issue be reproduced on another relevant supported environment?
 
-1. Which operating system is affected?
-2. Which desktop environment is being used?
-3. Which window system is being used?
-4. Can the issue be reproduced on another supported environment, and is that comparison relevant?
-
-Only after answering these questions should implementation changes be considered.
-
----
-
-# AI Agent Expectations
-
-When working on this repository:
-
-* treat Windows 11 as the visual reference for the glass-style UI
-* treat Windows 11 and Linux as supported platforms
-* evaluate platform-specific issues on the affected environment
-* keep necessary platform-specific handling isolated
-* avoid assuming compositor behavior is controlled by the application
-* preserve cross-platform buildability whenever possible
-
-Correct platform analysis is more important than platform-specific code changes.
+Correct platform analysis is more important than adding platform-specific code quickly.
