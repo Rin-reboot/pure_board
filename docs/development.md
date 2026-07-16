@@ -82,7 +82,7 @@ Use the existing directories:
 - `src/help`: in-app Markdown help and topic metadata
 - `src/ideas`: Idea-specific events and file operations
 - `src/windows`: secondary window creation and reuse
-- `src-tauri/src`: Rust commands and desktop integration
+- `src-tauri/src`: Rust commands, tray integration, and the tray-status worker
 - `src-tauri/capabilities`: permissions scoped by window
 - `packaging`: distribution-specific packaging
 
@@ -137,6 +137,8 @@ Current stores are:
 - `ideas.json`
 
 Stored data must be validated and normalized when loaded. Preserve backward compatibility whenever practical; the TODO implementation, for example, migrates legacy memo data.
+
+The tray-status settings and first-run tutorial also live in `settings.json`. Preserve compatibility with legacy introduction flags when changing onboarding behavior.
 
 If a migration is necessary:
 
@@ -232,13 +234,13 @@ Optimize only after identifying an actual problem.
 
 Avoid:
 
-- multiple pollers for the same data
+- uncoordinated pollers for the same data
 - unnecessary state updates and renders
 - unbounded history or editor state
 - repeated expensive computations
 - background network activity that the feature does not require
 
-The system and network hooks should continue to share the configured update interval. Ping remains user-triggered.
+The system and network hooks should continue to share the dashboard update interval. The Rust tray-status worker is deliberately independent so it can keep the tray icon current while the main window is hidden; changes to it should preserve bounded history, configurable waits, reduced-motion behavior, and battery-aware rendering. Ping remains user-triggered.
 
 ---
 

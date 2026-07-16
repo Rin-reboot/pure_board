@@ -13,6 +13,10 @@ use tauri::{
     AppHandle, Manager,
 };
 
+mod tray_status;
+
+use tray_status::{start_tray_status_worker, TrayStatusController, TrayStatusSettings};
+
 // フロントに返すデータの形。Serializeを付けるとJSONに変換できるようになる
 #[derive(Serialize)]
 struct SystemUsage {
@@ -317,11 +321,24 @@ fn hide_main_window_inner(app: &AppHandle) -> Result<(), String> {
         .map_err(|err| format!("Failed to hide main window: {err}"))
 }
 
-fn setup_tray(app: &mut tauri::App) -> tauri::Result<()> {
+fn setup_tray(
+    app: &mut tauri::App,
+) -> tauri::Result<(tauri::tray::TrayIcon, tauri::menu::MenuItem<tauri::Wry>)> {
+    let status_item = MenuItem::with_id(app, "status", "CPU: --", false, None::<&str>)?;
     let open_item = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&open_item, &separator, &quit_item])?;
+    let status_separator = PredefinedMenuItem::separator(app)?;
+    let quit_separator = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(
+        app,
+        &[
+            &status_item,
+            &status_separator,
+            &open_item,
+            &quit_separator,
+            &quit_item,
+        ],
+    )?;
 
     let mut tray_builder = TrayIconBuilder::with_id("main-tray")
         .tooltip("pure_board")
@@ -349,9 +366,17 @@ fn setup_tray(app: &mut tauri::App) -> tauri::Result<()> {
         tray_builder = tray_builder.icon(icon.clone());
     }
 
-    tray_builder.build(app)?;
+    let tray = tray_builder.build(app)?;
 
-    Ok(())
+    Ok((tray, status_item))
+}
+
+#[tauri::command]
+fn configure_tray_status(
+    controller: tauri::State<TrayStatusController>,
+    settings: TrayStatusSettings,
+) -> Result<(), String> {
+    controller.configure(settings)
 }
 
 #[tauri::command]
@@ -429,18 +454,34 @@ fn open_with_default_app(target: &str) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let tray_status_controller = TrayStatusController::default();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .setup(|app| {
+        .manage(tray_status_controller.clone())
+        .setup(move |app| {
             #[cfg(desktop)]
             {
                 app.handle().plugin(tauri_plugin_autostart::init(
                     tauri_plugin_autostart::MacosLauncher::LaunchAgent,
                     None,
                 ))?;
-                setup_tray(app)?;
+                let default_icon = app.default_window_icon().map(|icon| {
+                    tauri::image::Image::new_owned(
+                        icon.rgba().to_vec(),
+                        icon.width(),
+                        icon.height(),
+                    )
+                });
+                let (tray, status_item) = setup_tray(app)?;
+                start_tray_status_worker(
+                    tray_status_controller.clone(),
+                    tray,
+                    status_item,
+                    default_icon,
+                );
             }
 
             Ok(())
@@ -457,7 +498,8 @@ pub fn run() {
             show_main_window,
             hide_main_window,
             quit_app,
-            run_shortcut_action
+            run_shortcut_action,
+            configure_tray_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

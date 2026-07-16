@@ -56,6 +56,8 @@ The application should remain practical and incremental rather than becoming a f
 - light and dark themes with OS-theme detection and persisted preference
 - always-on-top mode
 - task tray with Open and Quit actions
+- configurable notification-area mini graph for CPU, RAM, or Network
+- skippable first-run tutorial with persisted completion state
 - configurable close behavior
 - launch-at-login setting
 - widget edit mode
@@ -76,6 +78,7 @@ Settings currently manages:
 
 - system and network polling interval
 - manual Ping target
+- taskbar mini-graph visibility, metric, and update interval
 - six configurable shortcut slots
 - launch at startup
 - close button behavior
@@ -161,6 +164,34 @@ Status: implemented
 
 Desktop-shell differences are evaluated on the affected Windows or Linux environment.
 
+## Taskbar Status Mini Graph
+
+Status: implemented
+
+- displays CPU, RAM, or Network history in the tray icon
+- is enabled by default with CPU selected
+- supports a persisted update interval from 1 to 60 seconds
+- continues updating while the main window is hidden
+- updates tooltip and menu values for all three metrics
+- keeps the graph visually static on battery power or when reduced motion is requested
+- restores the default app icon when disabled
+- provides Windows 11 visibility guidance in the first-run tutorial, Settings, and Help
+- provides the icon and context menu as the Linux baseline, with tooltip and left-click support dependent on the desktop environment
+
+Possible future extension:
+
+- animated image or GIF-based tray status styles
+
+## First-Run Tutorial
+
+Status: implemented
+
+- opens for users who have not completed or skipped it
+- introduces the dashboard, monitoring, customization, taskbar mini graph, and Help
+- can be skipped without navigating away from the dashboard
+- stores completion in `settings.json`
+- recognizes the legacy tray-status introduction flag as completed
+
 ## Automatic Startup
 
 Status: implemented
@@ -239,6 +270,7 @@ Status: implemented
 - loads user-facing topics from `src/help/content`
 - groups topics by category in a collapsible sidebar
 - renders the source Markdown through React Markdown
+- links Settings directly to the taskbar status guide
 
 ---
 

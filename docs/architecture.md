@@ -51,7 +51,8 @@ src-tauri/
 │   └── idea-editor.json Idea Editor permissions
 ├── src/
 │   ├── lib.rs           Commands, tray setup, and Tauri plugins
-│   └── main.rs          Desktop executable entry point
+│   ├── main.rs          Desktop executable entry point
+│   └── tray_status.rs   Tray mini-graph worker and renderer
 ├── Cargo.toml
 └── tauri.conf.json
 
@@ -81,6 +82,7 @@ Lazy loading keeps CodeMirror and the editor-specific bundle out of the main-win
 - Markdown-powered Help view
 - widget edit mode
 - close-action dialog
+- skippable first-run tutorial
 
 React state controls transient UI state. Reusable polling and persistence behavior belongs in hooks.
 
@@ -115,8 +117,10 @@ Hooks encapsulate reusable application logic:
 - `useSystemUsage` and `useNetworkUsage` poll Rust commands
 - `useUsageHistory` retains bounded frontend history
 - `usePersistedTodos` and `usePersistedIdeas` manage stored productivity data
-- settings hooks manage theme, always-on-top, update interval, Ping target, close behavior, shortcuts, and widget layout
+- settings hooks manage theme, always-on-top, update interval, Ping target, close behavior, shortcuts, widget layout, and tray status
 - `useAutoStart` wraps the Tauri autostart plugin
+- `useFirstRunTutorial` manages persisted tutorial completion
+- `useTrayStatusSettings` persists mini-graph settings and synchronizes them with Rust
 
 Widgets should not implement their own polling or duplicate persistence logic.
 
@@ -133,6 +137,7 @@ The frontend invokes focused commands registered in `src-tauri/src/lib.rs`:
 - `hide_main_window`: hide the main window while the app remains active
 - `quit_app`: terminate the application
 - `run_shortcut_action`: validate and open a URL, file, folder, or application
+- `configure_tray_status`: validate and apply tray mini-graph visibility, metric, interval, and reduced-motion state
 
 Commands should perform one task, validate untrusted frontend input, and return predictable errors. Platform-specific command construction belongs in localized Rust functions.
 
@@ -184,7 +189,7 @@ The application uses React state and hooks rather than a separate global state l
 
 Persistent data uses `tauri-plugin-store`:
 
-- `settings.json`: theme, always-on-top, update interval, Ping target, close preference, shortcuts, and widget layout
+- `settings.json`: theme, always-on-top, update interval, Ping target, close preference, shortcuts, widget layout, tray status, and first-run tutorial completion
 - `todos.json`: TODO text, completion state, and tag
 - `ideas.json`: idea title, Markdown body, and timestamps
 
@@ -207,6 +212,16 @@ Rust owns system information retrieval through `sysinfo` and the OS:
 `useSystemUsage` and `useNetworkUsage` poll at the persisted update interval, with a 100 ms minimum. Network throughput is current device activity, not link speed or an internet speed test.
 
 CPU and RAM history is stored only in bounded frontend memory. Rendering remains separate from collection, and alternate views reuse the same polling flow.
+
+---
+
+# Tray Status Worker
+
+`src-tauri/src/tray_status.rs` owns a background worker that remains active while the main window is hidden. It samples CPU, RAM, and network data independently of the React polling flow and renders a 32 px history graph into the tray icon.
+
+The frontend persists whether the graph is enabled, the selected metric, and a 1 to 60 second interval. `configure_tray_status` applies those values and the current reduced-motion preference to the Rust controller.
+
+The worker updates tooltip and menu text even when graph animation is static. It detects battery power through the Windows power API or Linux power-supply state and resumes graph rendering when the static condition ends.
 
 ---
 
@@ -233,9 +248,11 @@ The editor destroys its secondary window after pending persistence completes to 
 
 # Help Content
 
-In-app help lives under `src/help/content` as Markdown. `helpTopics.ts` imports each file as raw text, assigns its category and title, and `HelpPanel` renders it with React Markdown.
+In-app help lives under `src/help/content` as Markdown. `helpTopics.ts` imports each file as raw text, assigns its category and title, and `HelpPanel` renders it with React Markdown. Settings can open Help directly on the taskbar-status topic.
 
 Help content is user-facing documentation and must be updated when related behavior or supported-platform guidance changes.
+
+The first-run tutorial is a separate persisted overlay rather than a Help topic. It introduces the primary dashboard, customization, tray status, and Help, and records completion when finished or skipped.
 
 ---
 
@@ -249,7 +266,7 @@ Widget order and visibility are also persisted. The default layout contains CPU,
 
 # Platform Separation
 
-Platform-specific behavior remains localized in Rust where operating-system commands differ. Current examples are Ping arguments and shortcut launching.
+Platform-specific behavior remains localized in Rust where operating-system commands differ. Current examples are Ping arguments, shortcut launching, and tray-worker battery detection.
 
 Do not scatter Windows, Linux, Wayland, or X11 conditions through unrelated frontend modules. Evaluate desktop behavior on the affected supported environment before adding a workaround.
 

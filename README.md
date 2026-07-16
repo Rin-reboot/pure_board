@@ -39,12 +39,18 @@ A lightweight, cross-platform productivity dashboard inspired by the glass-style
 - Light and dark themes
 - Always-on-top mode
 - Task tray integration and automatic startup
+- Notification-area mini graph with selectable CPU, RAM, and network metrics
+- Skippable first-run tutorial
 - Reorderable and hideable widgets
 - Configurable close behavior
 
 ## Platforms
 
 pure_board is a cross-platform application for Windows 11 and Linux. Its visual design respects the glass-style UI of Windows 11 while remaining useful across supported desktop environments.
+
+Taskbar integration, including the notification-area mini graph, is designed and verified with Windows 11 as the priority platform. Linux provides the mini graph and context menu on supported desktop environments, but tooltip and left-click behavior may not be available everywhere.
+
+Windows 11 may initially place the pure_board icon in the hidden-icons overflow. Open the **^** menu and drag pure_board into the visible notification area, or enable it under **Settings > Personalization > Taskbar > Other system tray icons**. A skippable first-run tutorial introduces this feature, and the Settings panel keeps the detailed instructions available afterward.
 
 GitHub Releases provide Windows installers and x86_64 Linux packages in DEB, RPM, AppImage, and Arch Linux (`.pkg.tar.zst`) formats. The Arch package can be installed on Arch-family distributions such as CachyOS with `sudo pacman -U <package-file>`.
 

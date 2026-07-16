@@ -5,6 +5,7 @@ import networkPing from "./content/network-ping.md?raw";
 import settings from "./content/settings.md?raw";
 import shortcuts from "./content/shortcuts.md?raw";
 import systemMonitor from "./content/system-monitor.md?raw";
+import taskbarStatus from "./content/taskbar-status.md?raw";
 import todo from "./content/todo.md?raw";
 import troubleshooting from "./content/troubleshooting.md?raw";
 import windowControls from "./content/window-controls.md?raw";
@@ -43,6 +44,12 @@ export const HELP_TOPICS = [
     title: "CPU・RAM",
     category: "機能",
     content: systemMonitor,
+  },
+  {
+    id: "taskbar-status",
+    title: "タスクバー表示",
+    category: "機能",
+    content: taskbarStatus,
   },
   {
     id: "network-ping",

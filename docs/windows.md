@@ -97,6 +97,20 @@ Tray icon visibility, menu placement, and activation behavior may vary between W
 
 ---
 
+# Taskbar Status Mini Graph
+
+The tray icon can display a configurable mini graph for CPU, RAM, or Network. It is enabled by default, uses CPU initially, and accepts a persisted update interval from 1 to 60 seconds.
+
+A dedicated Rust worker samples system information and renders the 32 px icon independently of the main-window polling flow. It continues running while the main window is hidden. The tray tooltip and first menu item show current values.
+
+Windows 11 is the priority platform for this feature. Windows decides whether a third-party icon appears directly in the notification area or in the hidden-icons overflow. The skippable first-run tutorial introduces the feature, while Settings and Help retain instructions for keeping the icon visible.
+
+On Linux, the mini graph and context menu are the baseline behavior. Tooltip and left-click support may vary by desktop environment and tray implementation.
+
+The graph remains visually static on battery power or when the frontend reports a reduced-motion preference. Tooltip and menu values continue updating, and graph rendering resumes after AC power returns or reduced motion is disabled.
+
+---
+
 # Automatic Startup
 
 Automatic startup is implemented with `tauri-plugin-autostart`.
@@ -201,7 +215,7 @@ When a platform branch is necessary:
 - avoid leaking platform checks into unrelated components and hooks
 - verify that supported platforms still compile
 
-Current localized examples are Ping arguments and default-application launching in `src-tauri/src/lib.rs`.
+Current localized examples are Ping arguments and default-application launching in `src-tauri/src/lib.rs`, plus battery-state detection in `src-tauri/src/tray_status.rs`.
 
 ---
 
